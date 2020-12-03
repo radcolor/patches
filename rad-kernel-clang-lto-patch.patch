@@ -1,7 +1,7 @@
-From 0b367a1ecb22bab8758b1a7a0839d1b27cc7b395 Mon Sep 17 00:00:00 2001
+From a51df86dfff85a8d7f109e6118c22a6a6d9d0810 Mon Sep 17 00:00:00 2001
 From: Albert I <kras@raphielgang.org>
 Date: Sun, 17 Nov 2019 00:39:29 +0800
-Subject: [PATCH 01/48] soc/qcom: mpm-of: Remove __init declaration from
+Subject: [PATCH 01/50] soc/qcom: mpm-of: Remove __init declaration from
  mpm_irq_domain_size()
 
 WARNING: vmlinux.o(.text+0x57e06c): Section mismatch in reference from the function of_mpm_init() to the function .init.text:mpm_irq_domain_size()
@@ -40,10 +40,10 @@ index 77c50528be4b..1ce91a6ad0d8 100644
 2.29.0
 
 
-From 5d1200c1c21b5774347738614a64a1af8c5c4ab3 Mon Sep 17 00:00:00 2001
+From c54d72e7784758b00fbb83cdcd08fd208bdbbe03 Mon Sep 17 00:00:00 2001
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 Date: Wed, 24 Aug 2016 22:29:19 +1000
-Subject: [PATCH 02/48] kbuild: allow architectures to use thin archives
+Subject: [PATCH 02/50] kbuild: allow architectures to use thin archives
  instead of ld -r
 
 ld -r is an incremental link used to create built-in.o files in build
@@ -286,10 +286,10 @@ index ba6c34ea5429..270b663721a0 100755
 2.29.0
 
 
-From a6b4bf1e78a71f23289cde85d5084d078530f9ca Mon Sep 17 00:00:00 2001
+From 89a5636ca5bf1ed9fa785805b2e8484c2c414b93 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:43 +1100
-Subject: [PATCH 03/48] kbuild: minor improvement for thin archives build
+Subject: [PATCH 03/50] kbuild: minor improvement for thin archives build
 
 The root built-in.o archive is currently generated before all object
 files are built for the final link, due to final build of init/ after
@@ -343,10 +343,10 @@ index 270b663721a0..ed6a0127f724 100755
 2.29.0
 
 
-From ea1aec09d499930c7cfc94d8e5edaefc6983e4e5 Mon Sep 17 00:00:00 2001
+From dca0e336929066bfd52ea919879112f463b8fe52 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:13 +1000
-Subject: [PATCH 04/48] kbuild: thin archives final link close --whole-archives
+Subject: [PATCH 04/50] kbuild: thin archives final link close --whole-archives
  option
 
 Close the --whole-archives option with --no-whole-archive. Some
@@ -397,10 +397,10 @@ index ed6a0127f724..43a74357cd90 100755
 2.29.0
 
 
-From 3a1c33b576336591031a244dcd9835fcd9a1570f Mon Sep 17 00:00:00 2001
+From 6f8eb1a8fe6ea2e1e8123e036db2b229539d1465 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:38 +1100
-Subject: [PATCH 05/48] kbuild: thin archives for multi-y targets
+Subject: [PATCH 05/50] kbuild: thin archives for multi-y targets
 
 THIN_ARCHIVES builds archives for built-in.o targets, have it build
 multi-y targets as archives as well.
@@ -445,10 +445,10 @@ index d0b48ed88367..44a99b0ea2c1 100644
 2.29.0
 
 
-From 2f1d025275eb14b4f2f4674d1bd1282d2e6aa751 Mon Sep 17 00:00:00 2001
+From 84e70c6a823f23001fa3ea29e3b712f11b2b053e Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:14 +1000
-Subject: [PATCH 06/48] kbuild: thin archives use P option to ar
+Subject: [PATCH 06/50] kbuild: thin archives use P option to ar
 
 The P option makes ar do full path name matching and can prevent ar
 from discarding files with duplicate names in some cases of creating
@@ -516,10 +516,10 @@ index 43a74357cd90..9cc6e2cc7077 100755
 2.29.0
 
 
-From 2255cfcc4fd146603db1f0aaf52c2d5f694d236c Mon Sep 17 00:00:00 2001
+From 5ae025c54d03ac3f8e02fb3a57c06a178be94717 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:17 +1000
-Subject: [PATCH 07/48] kbuild: thin archives make default for all archs
+Subject: [PATCH 07/50] kbuild: thin archives make default for all archs
 
 Make thin archives build the default, but keep the config option
 to allow exemptions if any breakage can't be quickly solved.
@@ -548,10 +548,10 @@ index 6e6bcc5632cd..01c09e9038bf 100644
 2.29.0
 
 
-From b371fbe7380b43b4a99cc4573afccead7d895744 Mon Sep 17 00:00:00 2001
+From d6195891005a7339cb6f6c448e3b9f9ac411aa87 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Tue, 20 Jun 2017 01:52:05 +1000
-Subject: [PATCH 08/48] kbuild: handle libs-y archives separately from
+Subject: [PATCH 08/50] kbuild: handle libs-y archives separately from
  built-in.o archives
 
 The thin archives build currently puts all lib.a and built-in.o
@@ -593,7 +593,7 @@ index 0ff6a466a05b..ac2363ea05c5 100644
 +KBUILD_VMLINUX_INIT, KBUILD_VMLINUX_MAIN, and KBUILD_VMLINUX_LIBS together
 +specify all the object files used to link vmlinux.
 diff --git a/Makefile b/Makefile
-index ec9e8515919c..328115de6d17 100644
+index 5e2cd6c00ba9..5fdb77c6488a 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -993,19 +993,19 @@ core-y		:= $(patsubst %/, %/built-in.o, $(core-y))
@@ -727,10 +727,10 @@ index 9cc6e2cc7077..0a08006d600a 100755
 2.29.0
 
 
-From 660b7a9e7ae3904f9ac2f1e360ab296fda209718 Mon Sep 17 00:00:00 2001
+From 4fba46ea36f701598c49998cace4e32d9dc78d08 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:20 +1000
-Subject: [PATCH 09/48] kbuild: allow archs to select link dead code/data
+Subject: [PATCH 09/50] kbuild: allow archs to select link dead code/data
  elimination
 
 Introduce LD_DEAD_CODE_DATA_ELIMINATION option for architectures to
@@ -763,7 +763,7 @@ Signed-off-by: Subhajeet Muhuri <kenny3fcb@gmail.com>
  7 files changed, 104 insertions(+), 63 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 328115de6d17..523848f795b2 100644
+index 5fdb77c6488a..988de583ad80 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -658,6 +658,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
@@ -1000,7 +1000,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  #define INIT_RAM_FS
  #endif
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index e5d349d65ae9..e27ec720db81 100644
+index 7cabe0cc8665..3a1c2c92cf72 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -201,6 +201,29 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
@@ -1174,10 +1174,10 @@ index 8f7604e47999..2cdeb2b401c7 100644
 2.29.0
 
 
-From 2884cf647010dd8d66debd964e4c2eb48497936b Mon Sep 17 00:00:00 2001
+From d0ee4ca875c893c82ca3b86b24ca7b9a02c56085 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 14 Sep 2016 12:24:03 +1000
-Subject: [PATCH 10/48] kbuild: -ffunction-sections fix for archs with
+Subject: [PATCH 10/50] kbuild: -ffunction-sections fix for archs with
  conflicting sections
 
 Enabling -ffunction-sections modified the generic linker script to
@@ -1250,10 +1250,10 @@ index 4e1793a00bee..08ca3d8e5471 100644
 2.29.0
 
 
-From bd0b6138180a58bc32dd5ccbe685ea5eaadeb1ab Mon Sep 17 00:00:00 2001
+From a2e8ad6fccdb358edb466e846e5c561a9824d5f8 Mon Sep 17 00:00:00 2001
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 Date: Fri, 14 Apr 2017 15:17:26 +0900
-Subject: [PATCH 11/48] kbuild: avoid conflict between -ffunction-sections and
+Subject: [PATCH 11/50] kbuild: avoid conflict between -ffunction-sections and
  -pg on gcc-4.7
 
 Arnd Bergmann reported:
@@ -1277,7 +1277,7 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 523848f795b2..94b1aead2af9 100644
+index 988de583ad80..c8570adc71fa 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -658,11 +658,6 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
@@ -1308,10 +1308,10 @@ index 523848f795b2..94b1aead2af9 100644
 2.29.0
 
 
-From 473e7522abbdbcc62724fa01aaa6268b3b42a8ea Mon Sep 17 00:00:00 2001
+From d129ff63b8c29c2788fb9a0062f2cbdb0fe7ce2f Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:41 +1100
-Subject: [PATCH 12/48] kbuild: keep data tables through dead code elimination
+Subject: [PATCH 12/50] kbuild: keep data tables through dead code elimination
 
 When CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is enabled we must ensure
 that we still keep various programatically-accessed tables.
@@ -1564,10 +1564,10 @@ index 08ca3d8e5471..54ecdedb14c7 100644
 2.29.0
 
 
-From ef5684740b27c44da0106ec2cc50b0be373692b3 Mon Sep 17 00:00:00 2001
+From 238d0b76353b68a14d0334a807e1f59de631ea18 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 26 Jul 2017 22:46:27 +1000
-Subject: [PATCH 13/48] kbuild: linker script do not match C names unless
+Subject: [PATCH 13/50] kbuild: linker script do not match C names unless
  LD_DEAD_CODE_DATA_ELIMINATION is configured
 
 The .data and .bss sections were modified in the generic linker script to
@@ -1672,10 +1672,10 @@ index 54ecdedb14c7..d0214819a311 100644
 2.29.0
 
 
-From 12902d9e8975d2c6da9c3727241027dce697ceae Mon Sep 17 00:00:00 2001
+From b965686e3ac1bcf4ef2144dec28c97e995c1c331 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 10 Oct 2017 10:58:53 -0700
-Subject: [PATCH 14/48] FROMLIST: kbuild: fix LD_DEAD_CODE_DATA_ELIMINATION
+Subject: [PATCH 14/50] FROMLIST: kbuild: fix LD_DEAD_CODE_DATA_ELIMINATION
 
 Don't remove .head.text or .exitcall.exit when linking with --gc-sections,
 and include .init.text.* in .init.text and .init.rodata.* in .init.rodata.
@@ -1743,10 +1743,10 @@ index d0214819a311..98aed11452ad 100644
 2.29.0
 
 
-From 2653d1d38a91d9fe06170f20d0cb03ce083ddd58 Mon Sep 17 00:00:00 2001
+From d8783c44967aa669e086bbd3ff81c0d86bc282eb Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 13 Feb 2018 14:00:14 -0800
-Subject: [PATCH 15/48] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
+Subject: [PATCH 15/50] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
 
 Keep .entry.tramp.text to avoid the "Entry trampoline text too big"
 error while linking.
@@ -1776,10 +1776,10 @@ index 718f4c4be05c..fe14d821386f 100644
 2.29.0
 
 
-From c764fda063c23efbe310c69389c3744e78006369 Mon Sep 17 00:00:00 2001
+From 6f6be928ec9c40945a3cb4742657c358e5a698d4 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 10 Oct 2017 10:56:17 -0700
-Subject: [PATCH 16/48] FROMLIST: BACKPORT: arm64: keep .altinstructions and
+Subject: [PATCH 16/50] FROMLIST: BACKPORT: arm64: keep .altinstructions and
  .altinstr_replacement
 
 Make sure the linker doesn't remove .altinstructions or
@@ -1817,10 +1817,10 @@ index fe14d821386f..d0cf2910d808 100644
 2.29.0
 
 
-From 5441030856dc64797ef4cc4864abca781aff0adb Mon Sep 17 00:00:00 2001
+From 392a73a27ac1838142b4ba0a697155d419f7258e Mon Sep 17 00:00:00 2001
 From: Al Viro <viro@zeniv.linux.org.uk>
 Date: Fri, 15 Jan 2016 14:01:22 -0500
-Subject: [PATCH 17/48] [kbuild] handle exports in lib-y objects reliably
+Subject: [PATCH 17/50] handle exports in lib-y objects reliably
 
 Collect the symbols exported by anything that goes into lib.a and
 add an empty object (lib-exports.o) with explicit undefs for each
@@ -1932,10 +1932,10 @@ index c0c914620c01..427921235d6e 100644
 2.29.0
 
 
-From 535b66758d3439ec9c666ae9839b720fc28550ff Mon Sep 17 00:00:00 2001
+From b377a09197922d59d905fdaaaa320abe4b1db397 Mon Sep 17 00:00:00 2001
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Date: Wed, 16 Nov 2016 19:28:39 -0500
-Subject: [PATCH 18/48] kbuild: cmd_export_list: tighten the sed script
+Subject: [PATCH 18/50] kbuild: cmd_export_list: tighten the sed script
 
 When LTO is used, some ___ksymtab_string sections are seen by this sed
 script, creating lines containing a single ) such as:
@@ -1971,10 +1971,10 @@ index 427921235d6e..b05ff05e522c 100644
 2.29.0
 
 
-From f6ee7cbbac402dc1f3b45cd791cdcc93756373be Mon Sep 17 00:00:00 2001
+From 6a23e916cae83716f872eecd501fbba028f12726 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:40 +1100
-Subject: [PATCH 19/48] kbuild: improve linker compatibility with lib-ksyms.o
+Subject: [PATCH 19/50] kbuild: improve linker compatibility with lib-ksyms.o
  build
 
 lib-ksyms.o is created by linking an empty input file with a linker
@@ -2015,10 +2015,10 @@ index b05ff05e522c..475fc25397d4 100644
 2.29.0
 
 
-From 57bc48bf0756f8f1b8e094b1a78c566cbbf224f8 Mon Sep 17 00:00:00 2001
+From 8f20ea61b6c33a5b4ec21b7a2e9be6e44e45236d Mon Sep 17 00:00:00 2001
 From: Michal Marek <mmarek@suse.com>
 Date: Tue, 27 Oct 2015 14:02:24 +0100
-Subject: [PATCH 20/48] kbuild: Allow to specify composite modules with
+Subject: [PATCH 20/50] kbuild: Allow to specify composite modules with
  modname-m
 
 This allows to write
@@ -2136,10 +2136,10 @@ index 5a93712ea570..2daf8d6e49a1 100644
 2.29.0
 
 
-From 3780f29c96c50870f740b9ea378b88a75ee37a22 Mon Sep 17 00:00:00 2001
+From cbe8784e812dbec73a26ff918e5da5dbcad5e18a Mon Sep 17 00:00:00 2001
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Date: Thu, 21 Jan 2016 17:07:24 -0500
-Subject: [PATCH 21/48] kbuild: record needed exported symbols for modules
+Subject: [PATCH 21/50] kbuild: record needed exported symbols for modules
 
 Kernel modules are partially linked object files with some undefined
 symbols that are expected to be matched with EXPORT_SYMBOL() entries
@@ -2209,10 +2209,10 @@ index a88795d1a5b6..0210635a95f6 100644
 2.29.0
 
 
-From 393ecc96a067a42bde784623b227ef341b18cd11 Mon Sep 17 00:00:00 2001
+From 48dde9db2991d1825e36cef9c33d14a43b72b8b7 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:21 +1000
-Subject: [PATCH 22/48] kbuild: add arch specific post-link Makefile
+Subject: [PATCH 22/50] kbuild: add arch specific post-link Makefile
 
 Allow architectures to create arch/xxx/Makefile.postlink with targets
 for vmlinux, modules.ko, and clean, which will be invoked after final
@@ -2264,7 +2264,7 @@ index 64c84e2d06c0..fba7bed6193a 100644
  
  The kernel includes a set of headers that is exported to userspace.
 diff --git a/Makefile b/Makefile
-index 94b1aead2af9..f24a70afe5c4 100644
+index c8570adc71fa..b8405336f8d9 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1016,9 +1016,12 @@ export KBUILD_ALLDIRS := $(sort $(filter-out arch/%,$(vmlinux-alldirs)) arch Doc
@@ -2323,10 +2323,10 @@ index 7718a64b1cd1..8cb7971b3f25 100644
 2.29.0
 
 
-From c2ea0581e66814d1febb9ff1c9efea03e7f1d712 Mon Sep 17 00:00:00 2001
+From 7c170b583b390f461581e95f75d6cc63a0a73afc Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 17 Nov 2017 15:37:42 -0800
-Subject: [PATCH 23/48] FROMLIST: kbuild: add __cc-ifversion and
+Subject: [PATCH 23/50] FROMLIST: kbuild: add __cc-ifversion and
  compiler-specific variants
 
 This change adds macros for testing both compiler name and
@@ -2402,10 +2402,10 @@ index 1112dd94b440..f955e3556942 100644
 2.29.0
 
 
-From 69ac1ecd5ea89b811175a57163005228a6cf20b6 Mon Sep 17 00:00:00 2001
+From f4eb4574fc1913351d8f5d124a132317e2696783 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 17 Nov 2017 15:55:54 -0800
-Subject: [PATCH 24/48] FROMLIST: kbuild: add __ld-ifversion and
+Subject: [PATCH 24/50] FROMLIST: kbuild: add __ld-ifversion and
  linker-specific macros
 
 Add macros for testing both linker name and version.
@@ -2446,10 +2446,10 @@ index f955e3556942..7ef5293a1b37 100644
 2.29.0
 
 
-From 21fd76891b0b3a984bbf7c3146650ef773c435eb Mon Sep 17 00:00:00 2001
+From a4b1594134e54a491d84eaf55900676169ee7db2 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Wed, 25 Oct 2017 12:33:58 -0700
-Subject: [PATCH 25/48] FROMLIST: kbuild: add ld-name macro
+Subject: [PATCH 25/50] FROMLIST: kbuild: add ld-name macro
 
 GNU gold may require different flags than GNU ld. Add a macro for
 detecting the linker.
@@ -2483,10 +2483,10 @@ index 7ef5293a1b37..fcf10806de4d 100644
 2.29.0
 
 
-From d4924ef2c6eb2ffe50930b6d9e0fe97198077ebe Mon Sep 17 00:00:00 2001
+From b3203178581a3349d7b12c9e057a4537f4614e16 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 28 Nov 2017 08:48:49 -0800
-Subject: [PATCH 26/48] FROMLIST: kbuild: add support for clang LTO
+Subject: [PATCH 26/50] FROMLIST: kbuild: add support for clang LTO
 
 This change adds the configuration option CONFIG_LTO_CLANG, and
 build system support for clang's Link Time Optimization (LTO). In
@@ -2524,7 +2524,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  5 files changed, 271 insertions(+), 25 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index f24a70afe5c4..7fed2f5beaf1 100644
+index b8405336f8d9..fb19ec025ab8 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -342,6 +342,7 @@ include scripts/Kbuild.include
@@ -3039,10 +3039,10 @@ index 0a08006d600a..671a3e1a39eb 100755
 2.29.0
 
 
-From 16997a8d9ccd4fcdb0106bd0d871035305ccc881 Mon Sep 17 00:00:00 2001
+From b9be072fd3fef893622c1d0c67d1e877a23504e4 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 16 Jun 2017 12:52:57 -0700
-Subject: [PATCH 27/48] FROMLIST: BACKPORT: kbuild: fix dynamic ftrace with
+Subject: [PATCH 27/50] FROMLIST: BACKPORT: kbuild: fix dynamic ftrace with
  clang LTO
 
 With CONFIG_LTO_CLANG enabled, LLVM IR won't be compiled into object
@@ -3111,10 +3111,10 @@ index de179993e039..fd299451aa0b 100644
 +#endif
 +#endif
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index e27ec720db81..3884acf4aadf 100644
+index 3a1c2c92cf72..fc3dea29fe69 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -461,6 +461,10 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+@@ -467,6 +467,10 @@ unsigned long read_word_at_a_time(const void *addr)
  #define __visible
  #endif
  
@@ -3258,10 +3258,10 @@ index 7250fb38350c..911275681c82 100644
 2.29.0
 
 
-From 8e3de2b8c0b8b8e178a1ce411d7ccb3bacd028b4 Mon Sep 17 00:00:00 2001
+From bada949cc9a318598f0effb6d14ede29cc35c085 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Mon, 10 Apr 2017 12:32:24 -0700
-Subject: [PATCH 28/48] FROMLIST: scripts/mod: disable LTO for empty.c
+Subject: [PATCH 28/50] FROMLIST: scripts/mod: disable LTO for empty.c
 
 With CONFIG_LTO_CLANG, clang generates LLVM IR instead of ELF object
 files. As empty.o is used for probing target properties, disable LTO
@@ -3290,10 +3290,10 @@ index e0cb2e4a3b15..0a15591c9b5e 100644
 2.29.0
 
 
-From f20470717386ceb2f5b2c0eed7853d2d05dbec95 Mon Sep 17 00:00:00 2001
+From baeae8a4fc894eecdec44d43d038a1a3714ff45a Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Mon, 1 May 2017 11:08:05 -0700
-Subject: [PATCH 29/48] FROMLIST: efi/libstub: disable LTO
+Subject: [PATCH 29/50] FROMLIST: efi/libstub: disable LTO
 
 With CONFIG_LTO_CLANG, we produce LLVM IR instead of object files. Since LTO
 is not really needed here and the Makefile assumes we produce an object file,
@@ -3327,10 +3327,10 @@ index f39dda0a52f9..ca560666a80d 100644
 2.29.0
 
 
-From 2794b3c7274f9a7c670e2595a46fa873bade2ef6 Mon Sep 17 00:00:00 2001
+From 8acc398c4de73a8d0ca2c056ed4ceb6efb333636 Mon Sep 17 00:00:00 2001
 From: Kees Cook <keescook@chromium.org>
 Date: Wed, 24 Apr 2019 09:55:37 -0700
-Subject: [PATCH 30/48] arm64: sysreg: Make mrs_s and msr_s macros work with
+Subject: [PATCH 30/50] arm64: sysreg: Make mrs_s and msr_s macros work with
  Clang and LTO
 
 Clang's integrated assembler does not allow assembly macros defined
@@ -3605,10 +3605,10 @@ index 9142e082f5f3..c2986a0ffed0 100644
 2.29.0
 
 
-From ed9516e46c82c31cd392cbb8bda936e97eee788f Mon Sep 17 00:00:00 2001
+From e5751440d7ec995af885297d6daaa04b825bcf73 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Thu, 2 Nov 2017 09:34:42 -0700
-Subject: [PATCH 31/48] FROMLIST: BACKPORT: arm64: select
+Subject: [PATCH 31/50] FROMLIST: BACKPORT: arm64: select
  ARCH_SUPPORTS_LTO_CLANG
 
 Allow CONFIG_LTO_CLANG to be enabled for the architecture.
@@ -3638,10 +3638,10 @@ index 33fb9d6c5b7e..69eb6bb6ecea 100644
 2.29.0
 
 
-From 892b83c713f3038c4438d2c4bf0b6aa41fe09519 Mon Sep 17 00:00:00 2001
+From a748122fdec7b12ae3ee73097c144520f1cd8604 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 23:59:19 -0700
-Subject: [PATCH 32/48] arm64: Disable -fwhole-program for vDSO
+Subject: [PATCH 32/50] arm64: Disable -fwhole-program for vDSO
 
 The vDSO library is obviously not self-contained, so it doesn't qualify
 for -fwhole-program. Using -fwhole-program on the vDSO library breaks
@@ -3668,10 +3668,10 @@ index 4adcb532ac6a..6c69d5db9f36 100644
 2.29.0
 
 
-From 33ccea8a44d5bf4bf5e73f5476bac785edc9b23c Mon Sep 17 00:00:00 2001
+From 0c906d56d93a5a78cf8dc49fb6832033624305e5 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Wed, 30 Jan 2019 18:22:58 -0800
-Subject: [PATCH 33/48] ANDROID: scripts/Kbuild: add ld-name support for ld.lld
+Subject: [PATCH 33/50] ANDROID: scripts/Kbuild: add ld-name support for ld.lld
 
 Bug: 63740206
 Change-Id: I0cd9940c2fa07a6bb4573ec8b1edcd21fd1f3a4d
@@ -3711,10 +3711,10 @@ index fcf10806de4d..6a91da466733 100644
 2.29.0
 
 
-From 77a48b81202e7bc7de4b32bcdc55c230f574f3c1 Mon Sep 17 00:00:00 2001
+From 1e0679c56452637224fe94e9ee2dd67e526e9c93 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Mon, 11 Feb 2019 14:04:46 -0800
-Subject: [PATCH 34/48] BACKPORT: FROMLIST: Makefile: lld: set -O2 linker flag
+Subject: [PATCH 34/50] BACKPORT: FROMLIST: Makefile: lld: set -O2 linker flag
  when linking with LLD
 
 For arm64:
@@ -3737,7 +3737,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 7fed2f5beaf1..3bc868c7a444 100644
+index fb19ec025ab8..c3bef65d0d59 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -774,6 +774,10 @@ else
@@ -3755,10 +3755,10 @@ index 7fed2f5beaf1..3bc868c7a444 100644
 2.29.0
 
 
-From 1d2ed1e20bc7d7fbefa4494f5f1d6dfe226cfa50 Mon Sep 17 00:00:00 2001
+From 3028645af3e26c3cba3a61e81731b7f744c8e1f8 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Wed, 30 Jan 2019 18:23:26 -0800
-Subject: [PATCH 35/48] BACKPORT: FROMLIST: Makefile: lld: tell clang to use
+Subject: [PATCH 35/50] BACKPORT: FROMLIST: Makefile: lld: tell clang to use
  lld
 
 This is needed because clang doesn't select which linker to use based on
@@ -3780,7 +3780,7 @@ Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 3bc868c7a444..15b4d20694a8 100644
+index c3bef65d0d59..4c5e77911fdd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -631,6 +631,9 @@ CLANG_FLAGS    += $(call cc-option, -Wno-misleading-indentation)
@@ -3797,10 +3797,10 @@ index 3bc868c7a444..15b4d20694a8 100644
 2.29.0
 
 
-From c8604236d3d8a9ebf6dd64eea12ace99322171f8 Mon Sep 17 00:00:00 2001
+From 1688131ed0c3d5ff91400f28c9944cc489c280a5 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Tue, 19 Feb 2019 16:06:28 -0800
-Subject: [PATCH 36/48] ANDROID: Makefile: set -Qunused-arguments sooner
+Subject: [PATCH 36/50] ANDROID: Makefile: set -Qunused-arguments sooner
 
 The recently added support for -fuse-ld=lld is problematic for kbuild in
 that cc-option tests that add -Werror -c -fuse-ld=lld, as -c implies
@@ -3824,7 +3824,7 @@ Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 15b4d20694a8..3241c7d824a9 100644
+index 4c5e77911fdd..17aa6a0ee7c1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -634,6 +634,7 @@ KBUILD_AFLAGS	+= $(CLANG_FLAGS)
@@ -3847,10 +3847,10 @@ index 15b4d20694a8..3241c7d824a9 100644
 2.29.0
 
 
-From 0811f18c95bba0f067b9ebd106e914857958f290 Mon Sep 17 00:00:00 2001
+From cffd164eb12db936b1d3cf7d4e722c5b15576491 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 12 Feb 2019 10:58:47 -0800
-Subject: [PATCH 37/48] ANDROID: kbuild: allow lld to be used with
+Subject: [PATCH 37/50] ANDROID: kbuild: allow lld to be used with
  CONFIG_LTO_CLANG
 
 Bug: 63740206
@@ -3862,7 +3862,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3241c7d824a9..9b923e970793 100644
+index 17aa6a0ee7c1..6546595d27ac 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -640,10 +640,12 @@ endif
@@ -3895,10 +3895,10 @@ index 3241c7d824a9..9b923e970793 100644
 2.29.0
 
 
-From daf64fcc9f0094d112e7654a2832b3350599625e Mon Sep 17 00:00:00 2001
+From 44f3b4a398453e75c799b071d9b1594341ec18c0 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 12 Feb 2019 11:00:51 -0800
-Subject: [PATCH 38/48] ANDROID: arm64: add atomic_ll_sc.o to obj-y if using
+Subject: [PATCH 38/50] ANDROID: arm64: add atomic_ll_sc.o to obj-y if using
  lld
 
 __ll_sc_* functions are only referenced in inline assembly, which means lld
@@ -3949,10 +3949,10 @@ index d1bc7f9086f3..38bea7aade2a 100644
 2.29.0
 
 
-From b8b42a44e7b2ca423413630f9390207cf7fc434b Mon Sep 17 00:00:00 2001
+From 0ee89abbf2f8d73444820a71b7d095597476ba20 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Thu, 1 Aug 2019 12:45:43 -0700
-Subject: [PATCH 39/48] ANDROID: add support for ThinLTO
+Subject: [PATCH 39/50] ANDROID: add support for ThinLTO
 
 This change adds support for ThinLTO, which greatly improves build times
 over full LTO while retaining most of the performance benefits:
@@ -3969,7 +3969,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  3 files changed, 24 insertions(+), 6 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 9b923e970793..7341214eb794 100644
+index 6546595d27ac..604839d04044 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -649,8 +649,8 @@ endif
@@ -4051,10 +4051,10 @@ index 96cc63281688..b62062095e4d 100644
 2.29.0
 
 
-From 7d1cf3693ce383f2013aaedb70ee17d5866d2926 Mon Sep 17 00:00:00 2001
+From ade3f1f1d112ce9981fb612c1a5ddfdbe46e78e3 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 8 Dec 2017 15:49:24 -0800
-Subject: [PATCH 40/48] ANDROID: init: ensure initcall ordering with LTO
+Subject: [PATCH 40/50] ANDROID: init: ensure initcall ordering with LTO
 
 With LTO, the compiler doesn't necessarily obey link order for
 initcalls, and the initcall variable needs to be globally unique
@@ -4463,10 +4463,10 @@ index db1ed351180f..856bed265cbd 100755
 2.29.0
 
 
-From 0232fb9c51f508a95a860fae9b10bb6631569c90 Mon Sep 17 00:00:00 2001
+From bde77910878940f73887d99236d6776ad76ca1a9 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 3 Dec 2019 15:56:24 -0800
-Subject: [PATCH 41/48] ANDROID: kbuild: merge module sections with LTO
+Subject: [PATCH 41/50] ANDROID: kbuild: merge module sections with LTO
 
 LLD always splits sections with LTO, which increases module sizes. This
 change adds a linker script that merges the split sections in the final
@@ -4483,7 +4483,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  create mode 100644 scripts/module-lto.lds
 
 diff --git a/Makefile b/Makefile
-index 7341214eb794..da6ffff500df 100644
+index 604839d04044..0e263ba933be 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -853,6 +853,8 @@ lto-clang-flags	:= -flto
@@ -4527,10 +4527,10 @@ index 000000000000..f5ee544a877d
 2.29.0
 
 
-From ebbdd52d912f8f9501f3dee395d92b0d9ff63bb6 Mon Sep 17 00:00:00 2001
+From c935f578a9279845280123d41b8785173cc75821 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Wed, 4 Dec 2019 15:57:39 -0800
-Subject: [PATCH 42/48] ANDROID: kbuild: limit LTO inlining
+Subject: [PATCH 42/50] ANDROID: kbuild: limit LTO inlining
 
 This change limits function inlining across translation unit
 boundaries in order to reduce the binary size with LTO.
@@ -4549,7 +4549,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 6 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index da6ffff500df..279701e53596 100644
+index 0e263ba933be..06b02f721f8d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -853,6 +853,12 @@ lto-clang-flags	:= -flto
@@ -4569,10 +4569,10 @@ index da6ffff500df..279701e53596 100644
 2.29.0
 
 
-From cad42ab52f1fdfe3ba7cc21dd1c1683c9f159b24 Mon Sep 17 00:00:00 2001
+From 95f56915229e9a5339c2d724c889bffdcb1bb5d4 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 6 Aug 2019 10:38:30 -0700
-Subject: [PATCH 43/48] ANDROID: arm64: allow ThinLTO to be selected
+Subject: [PATCH 43/50] ANDROID: arm64: allow ThinLTO to be selected
 
 Bug: 145210207
 Change-Id: I1284cc32f70c2332ef9908e7b070c69476b1e5d0
@@ -4597,10 +4597,10 @@ index 69eb6bb6ecea..6ad383e1f8c1 100644
 2.29.0
 
 
-From 9e4844606a046e03165d98856e9da8c33de69d13 Mon Sep 17 00:00:00 2001
+From cb78c03d1f8a9c68a56b089b90474152e4d6bfee Mon Sep 17 00:00:00 2001
 From: Hsiu-Chang Chen <hsiuchangchen@google.com>
 Date: Fri, 26 Jul 2019 12:47:52 +0800
-Subject: [PATCH 44/48] Fix build break for Argument list too long
+Subject: [PATCH 44/50] Fix build break for Argument list too long
 
 Reduce the number of files listed in the for loop statement
 in function update_lto_symversions to prevent error "Argument
@@ -4638,10 +4638,10 @@ index b62062095e4d..e5cb0145e50b 100644
 2.29.0
 
 
-From c61323f714a58ee12c9ceb15c035ace4be7620ec Mon Sep 17 00:00:00 2001
+From b0a8e9113d3d722d330b84b6ede3d1132f31d66b Mon Sep 17 00:00:00 2001
 From: Shashank Baghel <theradcolor@gmail.com>
 Date: Mon, 23 Nov 2020 21:09:28 +0530
-Subject: [PATCH 45/48] configs: Enable Clang LTO
+Subject: [PATCH 45/50] configs: Enable Clang LTO
 
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
@@ -4650,7 +4650,7 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  2 files changed, 8 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 6b10dab00815..76e834045c57 100644
+index 7cad7d21d187..1f8f26334f66 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
 @@ -48,6 +48,10 @@ CONFIG_EMBEDDED=y
@@ -4665,7 +4665,7 @@ index 6b10dab00815..76e834045c57 100644
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index 77814b2cd4fa..dd47b56e17a3 100644
+index 88e0ac6557c1..ab8d7cac069b 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
 @@ -48,6 +48,10 @@ CONFIG_EMBEDDED=y
@@ -4683,10 +4683,10 @@ index 77814b2cd4fa..dd47b56e17a3 100644
 2.29.0
 
 
-From c9f5418c2f670c1230a33b5241f47c532087a931 Mon Sep 17 00:00:00 2001
+From a1ce6818a8c655e5e173eaade7225665a31d1da1 Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Tue, 6 Aug 2019 03:06:40 +0000
-Subject: [PATCH 46/48] Makefile: Use O3 optimization level for Clang LTO
+Subject: [PATCH 46/50] Makefile: Use O3 optimization level for Clang LTO
 
 Signed-off-by: Danny Lin <danny@kdrag0n.dev>
 ---
@@ -4694,7 +4694,7 @@ Signed-off-by: Danny Lin <danny@kdrag0n.dev>
  1 file changed, 2 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 279701e53596..53585fcf9c42 100644
+index 06b02f721f8d..1aa8cffd792d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -651,6 +651,8 @@ endif
@@ -4710,10 +4710,10 @@ index 279701e53596..53585fcf9c42 100644
 2.29.0
 
 
-From 5da1d5dcda45c80c6cca2a47b00b7ee4659aac5f Mon Sep 17 00:00:00 2001
+From a15963b83b1b13c70ed5e5c76c4dd10fde5b2e51 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 19 Dec 2017 08:55:23 -0800
-Subject: [PATCH 47/48] arm64: vdso: disable LTO
+Subject: [PATCH 47/50] arm64: vdso: disable LTO
 
 Due to a bug in clang, vdso fails to build when both LTO_CLANG and
 CC_OPTIMIZE_FOR_SIZE are enabled:
@@ -4746,10 +4746,10 @@ index 6c69d5db9f36..3f22494eabdd 100644
 2.29.0
 
 
-From 3ab733b339eaf493a6151d9b2393cda9eaef47d8 Mon Sep 17 00:00:00 2001
+From 04f644bd9637f9c42e3e6bbebaff85f0c5b1e35b Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Fri, 3 Apr 2020 11:50:04 -0700
-Subject: [PATCH 48/48] vmlinux.lds.h: Coalesce LLVM dead code elimination
+Subject: [PATCH 48/50] vmlinux.lds.h: Coalesce LLVM dead code elimination
  sections
 
 A recent LLVM commit [1] made LLD stop coalescing these temporary

@@ -1,302 +1,7 @@
-From d7c4205ba79d1ac5abea46a7e41a852fddaa4b56 Mon Sep 17 00:00:00 2001
-From: Shashank Baghel <theradcolor@gmail.com>
-Date: Fri, 18 Sep 2020 11:23:30 +0530
-Subject: [PATCH 01/40] treewide: Remove duplicate const specifier
-
-Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
----
- drivers/i2c/busses/i2c-msm-v2.c          | 2 +-
- drivers/input/fingerprint/fpc1020_tee.c  | 2 +-
- drivers/power/supply/qcom/smb-lib.c      | 2 +-
- drivers/video/fbdev/msm/mdss_mdp_debug.h | 2 +-
- drivers/video/fbdev/msm/mdss_panel.h     | 2 +-
- sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c | 2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-msm-v2.c b/drivers/i2c/busses/i2c-msm-v2.c
-index 870f69879237..aa75ebc8eaa0 100644
---- a/drivers/i2c/busses/i2c-msm-v2.c
-+++ b/drivers/i2c/busses/i2c-msm-v2.c
-@@ -2871,7 +2871,7 @@ static const struct i2c_algorithm i2c_msm_frmwrk_algrtm = {
- 	.functionality	= i2c_msm_frmwrk_func,
- };
- 
--static const char const *i2c_msm_adapter_name = "MSM-I2C-v2-adapter";
-+static const char *i2c_msm_adapter_name = "MSM-I2C-v2-adapter";
- 
- static int i2c_msm_frmwrk_reg(struct platform_device *pdev,
- 						struct i2c_msm_ctrl *ctrl)
-diff --git a/drivers/input/fingerprint/fpc1020_tee.c b/drivers/input/fingerprint/fpc1020_tee.c
-index c5397afcff51..883377ff2ca5 100644
---- a/drivers/input/fingerprint/fpc1020_tee.c
-+++ b/drivers/input/fingerprint/fpc1020_tee.c
-@@ -74,7 +74,7 @@ struct vreg_config {
- 	int ua_load;
- };
- 
--static const struct vreg_config const vreg_conf[] = {
-+static const struct vreg_config vreg_conf[] = {
- 	{ "vdd_ana", 1800000UL, 1800000UL, 6000, },
- 	{ "vcc_spi", 1800000UL, 1800000UL, 10, },
- 	{ "vdd_io", 1800000UL, 1800000UL, 6000, },
-diff --git a/drivers/power/supply/qcom/smb-lib.c b/drivers/power/supply/qcom/smb-lib.c
-index e2983761a0c6..8aa4aec062a9 100644
---- a/drivers/power/supply/qcom/smb-lib.c
-+++ b/drivers/power/supply/qcom/smb-lib.c
-@@ -218,7 +218,7 @@ enum {
- 	MAX_TYPES
- };
- 
--static const struct apsd_result const smblib_apsd_results[] = {
-+static const struct apsd_result smblib_apsd_results[] = {
- 	[UNKNOWN] = {
- 		.name	= "UNKNOWN",
- 		.bit	= 0,
-diff --git a/drivers/video/fbdev/msm/mdss_mdp_debug.h b/drivers/video/fbdev/msm/mdss_mdp_debug.h
-index 89aa3b519cb2..24715be48a4d 100644
---- a/drivers/video/fbdev/msm/mdss_mdp_debug.h
-+++ b/drivers/video/fbdev/msm/mdss_mdp_debug.h
-@@ -48,7 +48,7 @@ static inline const char *mdss_mdp_pipetype2str(u32 ptype)
- 
- static inline const char *mdss_mdp_format2str(u32 format)
- {
--	static const char const *strings[] = {
-+	static const char *strings[] = {
- #define FORMAT_NAME(f) [MDP_ ## f] = __stringify(f)
- 		FORMAT_NAME(RGB_565),
- 		FORMAT_NAME(BGR_565),
-diff --git a/drivers/video/fbdev/msm/mdss_panel.h b/drivers/video/fbdev/msm/mdss_panel.h
-index 059bc6ba4a76..488ab999d17a 100644
---- a/drivers/video/fbdev/msm/mdss_panel.h
-+++ b/drivers/video/fbdev/msm/mdss_panel.h
-@@ -67,7 +67,7 @@ struct panel_id {
- 
- static inline const char *mdss_panel2str(u32 panel)
- {
--	static const char const *names[] = {
-+	static const char *names[] = {
- #define PANEL_NAME(n) [n ## _PANEL] = __stringify(n)
- 		PANEL_NAME(MIPI_VIDEO),
- 		PANEL_NAME(MIPI_CMD),
-diff --git a/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c b/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-index 2615ee61db21..a294585b8bef 100644
---- a/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-+++ b/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-@@ -623,7 +623,7 @@ done:
- 
- 
- 
--static const char const *tty_mode[] = {"OFF", "HCO", "VCO", "FULL"};
-+static const char *tty_mode[] = {"OFF", "HCO", "VCO", "FULL"};
- static const struct soc_enum msm_tty_mode_enum[] = {
- 		SOC_ENUM_SINGLE_EXT(4, tty_mode),
- };
--- 
-2.29.0
-
-
-From 1bc565d3d6dfd1ce3605f9c29b50c354d3b49563 Mon Sep 17 00:00:00 2001
-From: Shashank Baghel <theradcolor@gmail.com>
-Date: Fri, 18 Sep 2020 10:15:07 +0530
-Subject: [PATCH 02/40] drivers: qcacld: Disable -Werror flag
-
-Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
----
- drivers/staging/qcacld-3.0/Kbuild | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/staging/qcacld-3.0/Kbuild b/drivers/staging/qcacld-3.0/Kbuild
-index 62a939a812b8..a837c40dd2ad 100644
---- a/drivers/staging/qcacld-3.0/Kbuild
-+++ b/drivers/staging/qcacld-3.0/Kbuild
-@@ -1275,7 +1275,6 @@ CDEFINES :=	-DANI_LITTLE_BYTE_ENDIAN \
- 		-DANI_OS_TYPE_ANDROID=6 \
- 		-DPTT_SOCK_SVC_ENABLE \
- 		-Wall\
--		-Werror\
- 		-D__linux__ \
- 		-DHAL_SELF_STA_PER_BSS=1 \
- 		-DFEATURE_WLAN_WAPI \
--- 
-2.29.0
-
-
-From 043cc028282155e89d07fce39ebb6c8af3492640 Mon Sep 17 00:00:00 2001
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Wed, 25 Apr 2018 17:55:08 -0700
-Subject: [PATCH 03/40] ASoC: msm: qdsp6v2: Fix bool comparision warning
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Fixes the following GCC 7.3.0 warning: comparison of constant ‘0’ with
-boolean expression is always false [-Wbool-compare]
-
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c b/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-index a294585b8bef..94cfdb0cf1d7 100644
---- a/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-+++ b/sound/soc/msm/qdsp6v2/msm-pcm-voice-v2.c
-@@ -496,7 +496,7 @@ static int msm_voice_sidetone_put(struct snd_kcontrol *kcontrol,
- 					struct snd_ctl_elem_value *ucontrol)
- {
- 	int ret;
--	bool sidetone_enable = ucontrol->value.integer.value[0];
-+	int sidetone_enable = ucontrol->value.integer.value[0];
- 	uint32_t session_id = ALL_SESSION_VSID;
- 
- 	if (sidetone_enable < 0) {
--- 
-2.29.0
-
-
-From bd036766995733914e484d0dd571b0f4f28afef3 Mon Sep 17 00:00:00 2001
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Wed, 25 Apr 2018 17:41:06 -0700
-Subject: [PATCH 04/40] msm: vidc: Fix parenthesis warning
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Fixes the following GCC 7.3.0 warning: the omitted middle operand in ?:
-will always be ‘true’, suggest explicit middle operand [-Wparentheses]
-
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/media/platform/msm/vidc/msm_vidc_common.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/media/platform/msm/vidc/msm_vidc_common.c b/drivers/media/platform/msm/vidc/msm_vidc_common.c
-index 916cef28c474..473ea1d52a28 100644
---- a/drivers/media/platform/msm/vidc/msm_vidc_common.c
-+++ b/drivers/media/platform/msm/vidc/msm_vidc_common.c
-@@ -3858,17 +3858,17 @@ int msm_comm_qbuf(struct msm_vidc_inst *inst, struct vb2_buffer *vb)
- 	 * Don't queue if:
- 	 * 1) Hardware isn't ready (that's simple)
- 	 */
--	defer = defer ?: inst->state != MSM_VIDC_START_DONE;
-+	defer = defer || (inst->state != MSM_VIDC_START_DONE);
- 
- 	/*
- 	 * 2) The client explicitly tells us not to because it wants this
- 	 * buffer to be batched with future frames.  The batch size (on both
- 	 * capabilities) is completely determined by the client.
- 	 */
--	defer = defer ?: vbuf && vbuf->flags & V4L2_MSM_BUF_FLAG_DEFER;
-+	defer = defer || (vbuf && vbuf->flags & V4L2_MSM_BUF_FLAG_DEFER);
- 
- 	/* 3) If we're in batch mode, we must have full batches of both types */
--	defer = defer ?: batch_mode && (!output_count || !capture_count);
-+	defer = defer || (batch_mode && (!output_count || !capture_count));
- 
- 	if (defer) {
- 		dprintk(VIDC_DBG, "Deferring queue of %pK\n", vb);
--- 
-2.29.0
-
-
-From c3d7f0e8268e7289915507277d14b39f898db2c4 Mon Sep 17 00:00:00 2001
-From: Shashank Baghel <theradcolor@gmail.com>
-Date: Fri, 18 Sep 2020 11:29:23 +0530
-Subject: [PATCH 05/40] drivers: ipa: Fix memset-elt-size warning
-
-Fixes the following GCC 7.3.0 warning: 'memset' used with length equal to number of elements without multiplication by element size [-Wmemset-elt-size]
-
-Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
----
- drivers/platform/msm/ipa/ipa_v2/ipa_rt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/platform/msm/ipa/ipa_v2/ipa_rt.c b/drivers/platform/msm/ipa/ipa_v2/ipa_rt.c
-index 007f92bcee13..5025053ec6eb 100644
---- a/drivers/platform/msm/ipa/ipa_v2/ipa_rt.c
-+++ b/drivers/platform/msm/ipa/ipa_v2/ipa_rt.c
-@@ -54,7 +54,7 @@ int __ipa_generate_rt_hw_rule_v2(enum ipa_ip_type ip,
- 	struct ipa_hdr_entry *hdr_entry;
- 
- 	if (buf == NULL) {
--		memset(tmp, 0, (IPA_RT_FLT_HW_RULE_BUF_SIZE/4));
-+		memset(tmp, 0, sizeof(tmp));
- 		buf = (u8 *)tmp;
- 	}
- 
--- 
-2.29.0
-
-
-From b0a24baef85574a4f10576a965799c41c286c907 Mon Sep 17 00:00:00 2001
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Wed, 25 Apr 2018 18:12:16 -0700
-Subject: [PATCH 06/40] msm: camera: Fix bool compare warning
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Fixes the following GCC 7.3.0 warning: comparison of constant ‘0’ with
-boolean expression is always false [-Wbool-compare]
-
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/media/platform/msm/camera_v2/msm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/platform/msm/camera_v2/msm.c b/drivers/media/platform/msm/camera_v2/msm.c
-index 66897a7778a9..a85cc59a24ec 100644
---- a/drivers/media/platform/msm/camera_v2/msm.c
-+++ b/drivers/media/platform/msm/camera_v2/msm.c
-@@ -1352,8 +1352,8 @@ static int msm_probe(struct platform_device *pdev)
- 	if (WARN_ON(rc < 0))
- 		goto media_fail;
- 
--	if (WARN_ON((rc == media_entity_init(&pvdev->vdev->entity,
--			0, NULL, 0)) < 0))
-+	rc = media_entity_init(&pvdev->vdev->entity, 0, NULL, 0);
-+	if (WARN_ON(rc < 0))
- 		goto entity_fail;
- 
- 	pvdev->vdev->entity.type = MEDIA_ENT_T_DEVNODE_V4L;
--- 
-2.29.0
-
-
-From 985bdca56174129e1686bde771d2d3329d92509f Mon Sep 17 00:00:00 2001
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Fri, 21 Aug 2020 12:14:21 +0530
-Subject: [PATCH 07/40] msm: mdss: Fix boot operation warning
-
-Fixes the following GCC 7.3.0 warning: increment of a boolean expression
-[-Wbool-operation]
----
- drivers/video/fbdev/msm/mdss_mdp_intf_video.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/msm/mdss_mdp_intf_video.c b/drivers/video/fbdev/msm/mdss_mdp_intf_video.c
-index 3761fa4af0eb..11f2fdb013e1 100644
---- a/drivers/video/fbdev/msm/mdss_mdp_intf_video.c
-+++ b/drivers/video/fbdev/msm/mdss_mdp_intf_video.c
-@@ -1236,8 +1236,8 @@ static int mdss_mdp_video_wait4comp(struct mdss_mdp_ctl *ctl, void *arg)
- 		if (rc == 0) {
- 			pr_warn("vsync wait timeout %d, fallback to poll mode\n",
- 					ctl->num);
--			ctx->polling_en++;
--			rc = mdss_mdp_video_pollwait(ctl);
-+         			ctx->polling_en = true;		
-+		rc = mdss_mdp_video_pollwait(ctl);
- 		} else {
- 			rc = 0;
- 		}
--- 
-2.29.0
-
-
-From 7b2aeb96c3b164fe84d3b30ee73529aec74d5729 Mon Sep 17 00:00:00 2001
+From 81aa621dfc69fbf2a8e548160ef6554b403b9d96 Mon Sep 17 00:00:00 2001
 From: Shashank Baghel <theradcolor@gmail.com>
 Date: Thu, 1 Oct 2020 11:00:30 +0530
-Subject: [PATCH 08/40] Makefile: Parse CPU varient to KBUILD flags for GCC
+Subject: [PATCH 01/32] Makefile: Parse CPU varient to KBUILD flags for GCC
 
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
@@ -304,7 +9,7 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index ec9e8515919c..6f54c832cb29 100644
+index 5e2cd6c00ba9..d066b7737fe1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -661,7 +661,14 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
@@ -326,17 +31,17 @@ index ec9e8515919c..6f54c832cb29 100644
 2.29.0
 
 
-From d95d8a3dbc4022b24b14443f25fc88494fddfcc6 Mon Sep 17 00:00:00 2001
+From 119d97d46d236ed9398116e4d4c4cf6317a2a62e Mon Sep 17 00:00:00 2001
 From: Subhajeet Muhuri <subhajeet.muhuri@gmail.com>
 Date: Wed, 8 Apr 2020 16:37:05 +0530
-Subject: [PATCH 09/40] Makefile: SDM660 Clang optimisation setup
+Subject: [PATCH 02/32] Makefile: SDM660 Clang optimisation setup
 
 ---
  Makefile | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/Makefile b/Makefile
-index 6f54c832cb29..160ac9948163 100644
+index d066b7737fe1..06cb1d50f031 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -667,6 +667,7 @@ KBUILD_CFLAGS	+= -mcpu=cortex-a73.cortex-a53
@@ -351,10 +56,10 @@ index 6f54c832cb29..160ac9948163 100644
 2.29.0
 
 
-From 7eced9eaa4ad750a5645756e37a93f3b12edf8a4 Mon Sep 17 00:00:00 2001
+From 7f2e7da8352e5987f54c2d1d35d29a65393cb391 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Sun, 8 Mar 2020 00:31:35 -0800
-Subject: [PATCH 10/40] kbuild: Disable stack conservation for GCC
+Subject: [PATCH 03/32] kbuild: Disable stack conservation for GCC
 
 There's plenty of room on the stack for a few more inlined bytes here
 and there. The measured stack usage at runtime is still safe without
@@ -367,7 +72,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 160ac9948163..08cfd212eb55 100644
+index 06cb1d50f031..44beace0e368 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -862,9 +862,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
@@ -384,10 +89,10 @@ index 160ac9948163..08cfd212eb55 100644
 2.29.0
 
 
-From 6140ccc86cd0c085071d943e59b4a8117e313b62 Mon Sep 17 00:00:00 2001
+From 259fc34100b73b9f1e74f86b51ecba30b30944cf Mon Sep 17 00:00:00 2001
 From: Kees Cook <keescook@chromium.org>
 Date: Wed, 24 Apr 2019 09:55:37 -0700
-Subject: [PATCH 11/40] arm64: sysreg: Make mrs_s and msr_s macros work with
+Subject: [PATCH 04/32] arm64: sysreg: Make mrs_s and msr_s macros work with
  Clang and LTO
 
 Clang's integrated assembler does not allow assembly macros defined
@@ -662,10 +367,10 @@ index 9142e082f5f3..c2986a0ffed0 100644
 2.29.0
 
 
-From 5dcdc1461cac87c952928a5f2b9c3115e61a576d Mon Sep 17 00:00:00 2001
+From 1e757cf342c317c10d51fe068f3adaa6d2c27ea8 Mon Sep 17 00:00:00 2001
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 Date: Wed, 24 Aug 2016 22:29:19 +1000
-Subject: [PATCH 12/40] kbuild: allow architectures to use thin archives
+Subject: [PATCH 05/32] kbuild: allow architectures to use thin archives
  instead of ld -r
 
 ld -r is an incremental link used to create built-in.o files in build
@@ -908,10 +613,10 @@ index ba6c34ea5429..270b663721a0 100755
 2.29.0
 
 
-From 17f71e65dadbaf242587cd621a9de205389328e5 Mon Sep 17 00:00:00 2001
+From e8b517bac892b7ed5310f4d9286515ab2a150dba Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:38 +1100
-Subject: [PATCH 13/40] kbuild: thin archives for multi-y targets
+Subject: [PATCH 06/32] kbuild: thin archives for multi-y targets
 
 THIN_ARCHIVES builds archives for built-in.o targets, have it build
 multi-y targets as archives as well.
@@ -956,10 +661,10 @@ index d0b48ed88367..44a99b0ea2c1 100644
 2.29.0
 
 
-From b7134c84ca42c0cba1492a0b25e64c205d8338bb Mon Sep 17 00:00:00 2001
+From 09e0aa8ef731e64db1efacb4138b2cd57a82f17e Mon Sep 17 00:00:00 2001
 From: Andi Kleen <ak@linux.intel.com>
 Date: Tue, 31 Mar 2015 03:45:39 -0700
-Subject: [PATCH 14/40] lto: Add __noreorder and mark initcalls __noreorder
+Subject: [PATCH 07/32] lto: Add __noreorder and mark initcalls __noreorder
 
 gcc 5 has a new no_reorder attribute that prevents top level
 reordering only for that symbol.
@@ -995,10 +700,10 @@ index af8b4a879934..ed03455e9876 100644
   * A trick to suppress uninitialized variable warning without generating any
   * code
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index e5d349d65ae9..91bde293d988 100644
+index 7cabe0cc8665..96df6b7d83bc 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -445,6 +445,9 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+@@ -451,6 +451,9 @@ unsigned long read_word_at_a_time(const void *addr)
  #define __assume_aligned(a, ...)
  #endif
  
@@ -1025,10 +730,10 @@ index 3561ea30ed8c..aad14524f7db 100644
 2.29.0
 
 
-From 6a0c8f6cb32e31233cb98f9d47f7c364152467f6 Mon Sep 17 00:00:00 2001
+From 7bfc603ed99998fd84230c7dd2b9124cf6e4ed61 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 10 Mar 2020 21:13:43 -0700
-Subject: [PATCH 15/40] sys_ni: Remove duplicate cond_syscall(sys_madvise)
+Subject: [PATCH 08/32] sys_ni: Remove duplicate cond_syscall(sys_madvise)
  entry
 
 This is already defined. Remove the duplicate from the less-correct
@@ -1055,10 +760,10 @@ index 0623787ec67a..e983a8b2ee60 100644
 2.29.0
 
 
-From 4f9e1198788eb78d91329586b80f0974023434b1 Mon Sep 17 00:00:00 2001
+From 0891b81adfa03671cdb3babfefae6a70bf2f657b Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 10 Mar 2020 21:19:28 -0700
-Subject: [PATCH 16/40] sys_ni: Fix cond_syscall() alias for LTO
+Subject: [PATCH 09/32] sys_ni: Fix cond_syscall() alias for LTO
 
 When using LTO, the conditional syscall aliases aren't weak, and instead
 override implemented syscalls rather than serve as a fallback for
@@ -1106,10 +811,10 @@ index 7e9bfd296e9a..1550b0dfa2f6 100644
 2.29.0
 
 
-From 55959dca9173136cbcfc27e89a8515b24b411e13 Mon Sep 17 00:00:00 2001
+From d35790c84e04cde16fa85906555eb0fd0ff42111 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 09:25:22 -0700
-Subject: [PATCH 17/40] arm64: Make __stack_chk_guard visible
+Subject: [PATCH 10/32] arm64: Make __stack_chk_guard visible
 
 When LTO is used, GCC optimizes out the __stack_chk_guard variable,
 resulting in undefined symbol errors. Fix it by explicitly making
@@ -1137,10 +842,10 @@ index 5dd9b572259f..0d9a952caeae 100644
 2.29.0
 
 
-From 9c3072e2457e29ec54e9bda66493ba0e8040875c Mon Sep 17 00:00:00 2001
+From afb8403cb9639379466d7febff51e106622c68f8 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 09:29:21 -0700
-Subject: [PATCH 18/40] arm64: Fix section mismatch with LTO caused by
+Subject: [PATCH 11/32] arm64: Fix section mismatch with LTO caused by
  ambiguous const
 
 Due to how dt_supported_cpu_ops and acpi_supported_cpu_ops are used,
@@ -1206,10 +911,10 @@ index 6342f1c61a09..154746648cdd 100644
 2.29.0
 
 
-From 7716ea6b6166012c40c21b273382d5135f88118e Mon Sep 17 00:00:00 2001
+From 31dda77578849b5be5b38a424b79a300892e8c2f Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 11:23:20 -0700
-Subject: [PATCH 19/40] mm: Move __free_pages_boot_core() from __init section
+Subject: [PATCH 12/32] mm: Move __free_pages_boot_core() from __init section
  to fix mismatch
 
 __free_pages_boot_core() is used by functions that are not located in
@@ -1238,10 +943,10 @@ index a100af131b9a..1a585fe52be7 100644
 2.29.0
 
 
-From 29c7588d09848e589c25909c2fe21d8a9951cee7 Mon Sep 17 00:00:00 2001
+From eda24c8eac2fc3ca6bde31d71ba6432bed81d95d Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 17 Mar 2020 20:14:51 -0700
-Subject: [PATCH 20/40] lto: Add Link Time Optimization support for GCC
+Subject: [PATCH 13/32] lto: Add Link Time Optimization support for GCC
 
 This requires a modern version of GCC and various other patches in order
 to work. LTO results in a smaller kernel binary with better performance.
@@ -1256,7 +961,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  3 files changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 08cfd212eb55..235ca572e80a 100644
+index 44beace0e368..8839aa7fbf87 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -632,6 +632,21 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
@@ -1282,10 +987,10 @@ index 08cfd212eb55..235ca572e80a 100644
  # values of the respective KBUILD_* variables
  ARCH_CPPFLAGS :=
 diff --git a/init/Kconfig b/init/Kconfig
-index d59f1bef37ac..f0b700af8231 100644
+index 7d11b0d5dd5c..02554ca19cb4 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1510,6 +1510,10 @@ config CC_OPTIMIZE_FOR_SIZE
+@@ -1511,6 +1511,10 @@ config CC_OPTIMIZE_FOR_SIZE
  
  endchoice
  
@@ -1322,10 +1027,10 @@ index 270b663721a0..5d00814568d5 100755
 2.29.0
 
 
-From 7407c62d960a34f09301ab4ca300e8dd3f00a3c1 Mon Sep 17 00:00:00 2001
+From 8858f9d4d26a2bcb2b1d37391cec69fb27d6a5f9 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 18 Mar 2020 21:54:15 -0700
-Subject: [PATCH 21/40] irqchip/gic-v3-its: Put its_init() in __init section
+Subject: [PATCH 14/32] irqchip/gic-v3-its: Put its_init() in __init section
 
 This fixes a section mismatch since its_init() is only used from inside
 the __init section.
@@ -1370,10 +1075,10 @@ index 54048f336a1f..fb8f1720fe91 100644
 2.29.0
 
 
-From c4993a65a9a12828778ec5c43ab13f9f963c2ab0 Mon Sep 17 00:00:00 2001
+From 0e2cd501f8dbef4d6eaedb3443250079c499fec2 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:20 +1000
-Subject: [PATCH 22/40] kbuild: allow archs to select link dead code/data
+Subject: [PATCH 15/32] kbuild: allow archs to select link dead code/data
  elimination
 
 Introduce LD_DEAD_CODE_DATA_ELIMINATION option for architectures to
@@ -1402,7 +1107,7 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  4 files changed, 53 insertions(+), 23 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 235ca572e80a..2f5da5914e93 100644
+index 8839aa7fbf87..8a7a449181d4 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -673,6 +673,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
@@ -1655,10 +1360,10 @@ index 8f7604e47999..2cdeb2b401c7 100644
 2.29.0
 
 
-From b8d4d7dae114faefbd399eda696ff1ef8da579e4 Mon Sep 17 00:00:00 2001
+From 7ea7a557965cbb5ef615490ca85ec7309013bebf Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 14 Sep 2016 12:24:03 +1000
-Subject: [PATCH 23/40] kbuild: -ffunction-sections fix for archs with
+Subject: [PATCH 16/32] kbuild: -ffunction-sections fix for archs with
  conflicting sections
 
 Enabling -ffunction-sections modified the generic linker script to
@@ -1731,10 +1436,10 @@ index 4e1793a00bee..08ca3d8e5471 100644
 2.29.0
 
 
-From d3c8c815bd3605a08ecf5973ec63f08c93620b8a Mon Sep 17 00:00:00 2001
+From 0e8a8e2736c86a74a7478bb02b9e7998d1f77421 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:41 +1100
-Subject: [PATCH 24/40] kbuild: keep data tables through dead code elimination
+Subject: [PATCH 17/32] kbuild: keep data tables through dead code elimination
 
 When CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is enabled we must ensure
 that we still keep various programatically-accessed tables.
@@ -1987,10 +1692,10 @@ index 08ca3d8e5471..54ecdedb14c7 100644
 2.29.0
 
 
-From d5dc98479c5046588052569bb46109cc1d17c91a Mon Sep 17 00:00:00 2001
+From 5cbc15655085a5a183fdeae10e684657274fbb66 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 26 Jul 2017 22:46:27 +1000
-Subject: [PATCH 25/40] kbuild: linker script do not match C names unless
+Subject: [PATCH 18/32] kbuild: linker script do not match C names unless
  LD_DEAD_CODE_DATA_ELIMINATION is configured
 
 The .data and .bss sections were modified in the generic linker script to
@@ -2095,10 +1800,10 @@ index 54ecdedb14c7..d0214819a311 100644
 2.29.0
 
 
-From 4ecdc6e7c66b11be34f08d96ef3e28b0254bbbab Mon Sep 17 00:00:00 2001
+From d8463ef8e56ecf404424daa3d22b1e8752218104 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 9 May 2018 22:59:58 +1000
-Subject: [PATCH 26/40] kbuild: Fix asm-generic/vmlinux.lds.h for
+Subject: [PATCH 19/32] kbuild: Fix asm-generic/vmlinux.lds.h for
  LD_DEAD_CODE_DATA_ELIMINATION
 
 KEEP more tables, and add the function/data section wildcard to more
@@ -2265,10 +1970,10 @@ index d0214819a311..c1e2d2855547 100644
 2.29.0
 
 
-From b794800a66e6c056cdc4bc386412ccb06b78679f Mon Sep 17 00:00:00 2001
+From 63160b37df0d2f44d2a5da1a9ba3a9bae86b1e29 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 9 May 2018 23:00:00 +1000
-Subject: [PATCH 27/40] kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+Subject: [PATCH 20/32] kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
  selectable if enabled
 
 Architectures that are capable can select
@@ -2309,10 +2014,10 @@ index 7217d1caacee..f545fa15ed5b 100644
  	bool
  	help
 diff --git a/init/Kconfig b/init/Kconfig
-index f0b700af8231..f7b5c549d5a0 100644
+index 02554ca19cb4..211a89877be8 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1514,6 +1514,33 @@ config LTO
+@@ -1515,6 +1515,33 @@ config LTO
  	bool "Enable Link Time Optimization"
  	select THIN_ARCHIVES
  
@@ -2350,10 +2055,10 @@ index f0b700af8231..f7b5c549d5a0 100644
 2.29.0
 
 
-From 642c33b3b107bd1c6b507374aaf9d3d9e6c2ff05 Mon Sep 17 00:00:00 2001
+From 20a57153ceed40cbdb7bc2756fdc6d92e55e5a64 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 17:51:02 -0700
-Subject: [PATCH 28/40] arm64: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+Subject: [PATCH 21/32] arm64: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
  selected
 
 DCE is not problematic on arm64 and works out of the box. Let it be
@@ -2380,10 +2085,10 @@ index 33fb9d6c5b7e..f50814d92eb2 100644
 2.29.0
 
 
-From 897d53d2ba429a53d38794c74f42f92210454074 Mon Sep 17 00:00:00 2001
+From 8bd44fb44f1cd20beb940a1949bd0f68f27c8ccb Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 18:58:42 -0700
-Subject: [PATCH 29/40] lib/nlattr.c: Fix stringop overflow warning in
+Subject: [PATCH 22/32] lib/nlattr.c: Fix stringop overflow warning in
  nla_strcmp()
 
 strlen() returns a size_t value, so store it in a size_t variable.
@@ -2410,10 +2115,10 @@ index f5907d23272d..cc09c8402637 100644
 2.29.0
 
 
-From 8cd40da9d76c6dfa6a1e199e3c4b5262b7c020dc Mon Sep 17 00:00:00 2001
+From fa6fdae61c6053a9d34de0383b6b2cf98962a758 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 23:59:19 -0700
-Subject: [PATCH 30/40] arm64: Disable -fwhole-program for vDSO
+Subject: [PATCH 23/32] arm64: Disable -fwhole-program for vDSO
 
 The vDSO library is obviously not self-contained, so it doesn't qualify
 for -fwhole-program. Using -fwhole-program on the vDSO library breaks
@@ -2440,10 +2145,10 @@ index 4adcb532ac6a..6c69d5db9f36 100644
 2.29.0
 
 
-From fd9d52b7ceb58ee2bec5960363ffdae95b2e64a8 Mon Sep 17 00:00:00 2001
+From 34ab4919c57d48cd3af59f8aa92c19ef30097a5a Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Sun, 29 Mar 2020 10:47:41 -0700
-Subject: [PATCH 31/40] soc: qcom: spcom: Fix spcom_register_chardev() section
+Subject: [PATCH 24/32] soc: qcom: spcom: Fix spcom_register_chardev() section
  mismatch
 
 spcom_register_chardev() is called by this driver's probe function,
@@ -2473,10 +2178,10 @@ index 68199d9adb02..df2076c4cad8 100644
 2.29.0
 
 
-From eac32db5b89586a02548b9f5c9f10c8a967c4a3e Mon Sep 17 00:00:00 2001
+From a4dd2a19ab79ac2e7e5b8fafc02b62870b1ea323 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 7 May 2020 23:46:47 -0700
-Subject: [PATCH 32/40] arm64: Use a macro to silence current_stack_pointer
+Subject: [PATCH 25/32] arm64: Use a macro to silence current_stack_pointer
  warning with LTO
 
 GCC spams the following warning during link time with LTO:
@@ -2511,10 +2216,10 @@ index ffcdf742cddf..a709cb23349f 100644
 2.29.0
 
 
-From 90fbe98ab0fc482eebbc13a5d63f172ae6a5d0d1 Mon Sep 17 00:00:00 2001
+From 7acab4a902efa4e565ea69a0cdec7cbf6377a321 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 7 May 2020 23:46:48 -0700
-Subject: [PATCH 33/40] kbuild: Pass -flinker-output=nolto-rel for LTO to
+Subject: [PATCH 26/32] kbuild: Pass -flinker-output=nolto-rel for LTO to
  silence warning
 
 GCC gives the following warning because some of the linked files are
@@ -2531,7 +2236,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 2f5da5914e93..328405575453 100644
+index 8a7a449181d4..51eb0e51f537 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -636,7 +636,8 @@ ifdef CONFIG_LTO
@@ -2548,10 +2253,10 @@ index 2f5da5914e93..328405575453 100644
 2.29.0
 
 
-From 9325a0453b577156c9a9bd83dbd201c777f74b6e Mon Sep 17 00:00:00 2001
+From 42471c4d0a160c6e6f9d5e90b03aada7069887bf Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 13 Feb 2018 14:00:14 -0800
-Subject: [PATCH 34/40] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
+Subject: [PATCH 27/32] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
 
 Keep .entry.tramp.text to avoid the "Entry trampoline text too big"
 error while linking.
@@ -2581,10 +2286,10 @@ index 718f4c4be05c..fe14d821386f 100644
 2.29.0
 
 
-From 868c03fcc6e82fddf30dae74de71ae00b1f467b1 Mon Sep 17 00:00:00 2001
+From 5fbe6a647fe3287b21fc4344a507e69d5963ea6e Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 12 May 2020 12:00:08 -0700
-Subject: [PATCH 35/40] kbuild: Increase GCC automatic inline instruction limit
+Subject: [PATCH 28/32] kbuild: Increase GCC automatic inline instruction limit
  to 1000 for LTO
 
 GCC 10 updated its interprocedural optimizer's logic to have it make
@@ -2603,7 +2308,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 328405575453..cf56bf2b2a6a 100644
+index 51eb0e51f537..0978483dfde7 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -635,7 +635,7 @@ endif
@@ -2619,10 +2324,10 @@ index 328405575453..cf56bf2b2a6a 100644
 2.29.0
 
 
-From ded9ecdcde11e4be1e5e236e80a8ec7347154f64 Mon Sep 17 00:00:00 2001
+From a4d0d0b2e6bb225050dc31ab0ddf8b262b03f2da Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Wed, 10 Jul 2019 19:18:40 -0700
-Subject: [PATCH 36/40] Makefile: Use pipes rather than temporary files for
+Subject: [PATCH 29/32] Makefile: Use pipes rather than temporary files for
  intermediate steps
 
 GCC supports the use of pipes for intermediate compilation steps (e.g.
@@ -2654,7 +2359,7 @@ Signed-off-by: Danny Lin <danny@kdrag0n.dev>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index cf56bf2b2a6a..70aa0e98c517 100644
+index 0978483dfde7..84aad5483621 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -305,7 +305,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -2679,10 +2384,10 @@ index cf56bf2b2a6a..70aa0e98c517 100644
 2.29.0
 
 
-From 3755b04c2170e53609f1a8b460150a2ce29236fd Mon Sep 17 00:00:00 2001
+From 1557cb277492ad5c2eca2b810c446376bc9968e5 Mon Sep 17 00:00:00 2001
 From: Tyler Nijmeh <tylernij@gmail.com>
 Date: Sat, 18 May 2019 14:27:21 -0700
-Subject: [PATCH 37/40] arch: Allow all archs to select optimized inlining
+Subject: [PATCH 30/32] arch: Allow all archs to select optimized inlining
 
 Perhaps we can allow GCC to more efficiently optimize code for embedded
 systems.
@@ -2770,10 +2475,10 @@ index c2b809cbd430..816af004228a 100644
 2.29.0
 
 
-From 662d0ca06eb30ee1fff39c6b1bd42e7c7b324736 Mon Sep 17 00:00:00 2001
+From cca68dd98e2e8ec435b2381060451a3c7f3661bc Mon Sep 17 00:00:00 2001
 From: Tyler Nijmeh <tylernij@gmail.com>
 Date: Sat, 18 May 2019 14:31:39 -0700
-Subject: [PATCH 38/40] configs: Optimize inlining of arch
+Subject: [PATCH 31/32] configs: Optimize inlining of arch
 
 Signed-off-by: Tyler Nijmeh <tylernij@gmail.com>
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
@@ -2783,7 +2488,7 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 6b10dab00815..7cad00279c5a 100644
+index 7cad7d21d187..7bf9982fa730 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
 @@ -772,6 +772,8 @@ CONFIG_NLS_UTF8=y
@@ -2793,10 +2498,10 @@ index 6b10dab00815..7cad00279c5a 100644
 +CONFIG_OPTIMIZE_INLINING=y
 +CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
  CONFIG_MAGIC_SYSRQ=y
+ CONFIG_FRAME_WARN=0
  CONFIG_PANIC_TIMEOUT=5
- CONFIG_DEBUG_SET_MODULE_RONX=y
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index 77814b2cd4fa..ac69e2fbc643 100644
+index 88e0ac6557c1..60d281dbd88d 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
 @@ -772,6 +772,8 @@ CONFIG_NLS_UTF8=y
@@ -2806,16 +2511,16 @@ index 77814b2cd4fa..ac69e2fbc643 100644
 +CONFIG_OPTIMIZE_INLINING=y
 +CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
  CONFIG_MAGIC_SYSRQ=y
+ CONFIG_FRAME_WARN=0
  CONFIG_PANIC_TIMEOUT=5
- CONFIG_DEBUG_SET_MODULE_RONX=y
 -- 
 2.29.0
 
 
-From a6345b1f5d9aaa4f709d85f182b734f36551db5a Mon Sep 17 00:00:00 2001
+From 26e92aee002d950576d0addd92c3f4066a50a0b3 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 11:30:43 -0700
-Subject: [PATCH 39/40] configs: Enable Link Time Optimization
+Subject: [PATCH 32/32] configs: Enable Link Time Optimization
 
 Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
@@ -2825,7 +2530,7 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  2 files changed, 2 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 7cad00279c5a..69c154a56358 100644
+index 7bf9982fa730..f4180062c024 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
 @@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
@@ -2837,7 +2542,7 @@ index 7cad00279c5a..69c154a56358 100644
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index ac69e2fbc643..ec97991010ff 100644
+index 60d281dbd88d..1e9da5f2e190 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
 @@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
