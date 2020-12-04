@@ -1,0 +1,28 @@
+From 6a1b50e58a36735e00def60428a50ba938dd961d Mon Sep 17 00:00:00 2001
+From: Shashank Baghel <theradcolor@gmail.com>
+Date: Fri, 4 Dec 2020 17:42:40 +0530
+Subject: [PATCH] fakerad: defconfig: Enable Clang LTO
+
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ arch/arm64/configs/fakerad_defconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/configs/fakerad_defconfig b/arch/arm64/configs/fakerad_defconfig
+index f6d83975ae7d..a3a3d7bea117 100644
+--- a/arch/arm64/configs/fakerad_defconfig
++++ b/arch/arm64/configs/fakerad_defconfig
+@@ -48,6 +48,10 @@ CONFIG_EMBEDDED=y
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_PROFILING=y
+ CONFIG_JUMP_LABEL=y
++# CONFIG_LLVM_POLLY is not set
++# CONFIG_THINLTO is not set
++CONFIG_LTO_CLANG=y
++# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
+ CONFIG_CC_STACKPROTECTOR_STRONG=y
+ CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
+ CONFIG_MODULES=y
+-- 
+2.29.0
+

@@ -1,0 +1,25 @@
+From 8fa42e488c154c57f15712717db230dd4635148f Mon Sep 17 00:00:00 2001
+From: Shashank Baghel <theradcolor@gmail.com>
+Date: Fri, 4 Dec 2020 17:46:00 +0530
+Subject: [PATCH] fakerad: defconfig: Enable GCC LTO
+
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ arch/arm64/configs/fakerad_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/fakerad_defconfig b/arch/arm64/configs/fakerad_defconfig
+index f6d83975ae7d..3f6a4e9cff18 100644
+--- a/arch/arm64/configs/fakerad_defconfig
++++ b/arch/arm64/configs/fakerad_defconfig
+@@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_PROFILING=y
+ CONFIG_JUMP_LABEL=y
++CONFIG_LTO=y
+ CONFIG_CC_STACKPROTECTOR_STRONG=y
+ CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
+ CONFIG_MODULES=y
+-- 
+2.29.0
+
