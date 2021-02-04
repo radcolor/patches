@@ -1,49 +1,7 @@
-From a51df86dfff85a8d7f109e6118c22a6a6d9d0810 Mon Sep 17 00:00:00 2001
-From: Albert I <kras@raphielgang.org>
-Date: Sun, 17 Nov 2019 00:39:29 +0800
-Subject: [PATCH 01/50] soc/qcom: mpm-of: Remove __init declaration from
- mpm_irq_domain_size()
-
-WARNING: vmlinux.o(.text+0x57e06c): Section mismatch in reference from the function of_mpm_init() to the function .init.text:mpm_irq_domain_size()
-The function of_mpm_init() references
-the function __init mpm_irq_domain_size().
-This is often because of_mpm_init lacks a __init
-annotation or the annotation of mpm_irq_domain_size is wrong.
-
-WARNING: vmlinux.o(.text+0x57e250): Section mismatch in reference from the function of_mpm_init() to the function .init.text:mpm_irq_domain_size()
-The function of_mpm_init() references
-the function __init mpm_irq_domain_size().
-This is often because of_mpm_init lacks a __init
-annotation or the annotation of mpm_irq_domain_size is wrong.
-
-Signed-off-by: Albert I <kras@raphielgang.org>
-Signed-off-by: Aayush Gupta <aayushgupta219@gmail.com>
-Change-Id: Iad284b2093d4e6da365b38a6a7304c7bb3d27c91
----
- drivers/soc/qcom/mpm-of.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/soc/qcom/mpm-of.c b/drivers/soc/qcom/mpm-of.c
-index 77c50528be4b..1ce91a6ad0d8 100644
---- a/drivers/soc/qcom/mpm-of.c
-+++ b/drivers/soc/qcom/mpm-of.c
-@@ -764,7 +764,7 @@ static int msm_mpm_dev_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static inline int __init mpm_irq_domain_size(struct irq_domain *d)
-+static inline int mpm_irq_domain_size(struct irq_domain *d)
- {
- 	return d->revmap_size ?: MAX_IRQ;
- }
--- 
-2.29.0
-
-
-From c54d72e7784758b00fbb83cdcd08fd208bdbbe03 Mon Sep 17 00:00:00 2001
+From 33ec80b9842f864c9f7c1d4aaea10acae08d6dae Mon Sep 17 00:00:00 2001
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 Date: Wed, 24 Aug 2016 22:29:19 +1000
-Subject: [PATCH 02/50] kbuild: allow architectures to use thin archives
+Subject: [PATCH 01/47] kbuild: allow architectures to use thin archives
  instead of ld -r
 
 ld -r is an incremental link used to create built-in.o files in build
@@ -129,10 +87,10 @@ index 86b2bfc3034f..6e6bcc5632cd 100644
  	bool
  	help
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index e6441514be23..d0b48ed88367 100644
+index 726d1b3f6759..e92e55e60d16 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -412,12 +412,22 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+@@ -415,12 +415,22 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
  # Rule to compile a set of .o files into one .o file
  #
  ifdef builtin-target
@@ -158,7 +116,7 @@ index e6441514be23..d0b48ed88367 100644
  
  $(builtin-target): $(obj-y) FORCE
  	$(call if_changed,link_o_target)
-@@ -443,7 +453,12 @@ $(modorder-target): $(subdir-ym) FORCE
+@@ -446,7 +456,12 @@ $(modorder-target): $(subdir-ym) FORCE
  #
  ifdef lib-target
  quiet_cmd_link_l_target = AR      $@
@@ -283,13 +241,13 @@ index ba6c34ea5429..270b663721a0 100755
  info LD vmlinux.o
  modpost_link vmlinux.o
 -- 
-2.29.0
+2.25.1
 
 
-From 89a5636ca5bf1ed9fa785805b2e8484c2c414b93 Mon Sep 17 00:00:00 2001
+From 4456c4e1f5d67c8c1dfbf6e99d656103f48d283c Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:43 +1100
-Subject: [PATCH 03/50] kbuild: minor improvement for thin archives build
+Subject: [PATCH 02/47] kbuild: minor improvement for thin archives build
 
 The root built-in.o archive is currently generated before all object
 files are built for the final link, due to final build of init/ after
@@ -340,13 +298,13 @@ index 270b663721a0..ed6a0127f724 100755
  kallsyms_vmlinux=""
  if [ -n "${CONFIG_KALLSYMS}" ]; then
 -- 
-2.29.0
+2.25.1
 
 
-From dca0e336929066bfd52ea919879112f463b8fe52 Mon Sep 17 00:00:00 2001
+From 15ea4c2d944056605809a307d6313f04e716a9ad Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:13 +1000
-Subject: [PATCH 04/50] kbuild: thin archives final link close --whole-archives
+Subject: [PATCH 03/47] kbuild: thin archives final link close --whole-archives
  option
 
 Close the --whole-archives option with --no-whole-archive. Some
@@ -394,13 +352,13 @@ index ed6a0127f724..43a74357cd90 100755
  			objects="${KBUILD_VMLINUX_INIT}			\
  				-Wl,--start-group			\
 -- 
-2.29.0
+2.25.1
 
 
-From 6f8eb1a8fe6ea2e1e8123e036db2b229539d1465 Mon Sep 17 00:00:00 2001
+From bf94523d9b0118dc69a254b135075e6c2972b130 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:38 +1100
-Subject: [PATCH 05/50] kbuild: thin archives for multi-y targets
+Subject: [PATCH 04/47] kbuild: thin archives for multi-y targets
 
 THIN_ARCHIVES builds archives for built-in.o targets, have it build
 multi-y targets as archives as well.
@@ -416,10 +374,10 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index d0b48ed88367..44a99b0ea2c1 100644
+index e92e55e60d16..1870109b7f10 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -478,11 +478,18 @@ $(filter $(addprefix $(obj)/,         \
+@@ -481,11 +481,18 @@ $(filter $(addprefix $(obj)/,         \
  $($(subst $(obj)/,,$(@:.o=-objs)))    \
  $($(subst $(obj)/,,$(@:.o=-y)))), $^)
  
@@ -442,13 +400,13 @@ index d0b48ed88367..44a99b0ea2c1 100644
  $(multi-used-y): FORCE
  	$(call if_changed,link_multi-y)
 -- 
-2.29.0
+2.25.1
 
 
-From 84e70c6a823f23001fa3ea29e3b712f11b2b053e Mon Sep 17 00:00:00 2001
+From 2ab2206388fa281d48640a175cf4986302904e28 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:14 +1000
-Subject: [PATCH 06/50] kbuild: thin archives use P option to ar
+Subject: [PATCH 05/47] kbuild: thin archives use P option to ar
 
 The P option makes ar do full path name matching and can prevent ar
 from discarding files with duplicate names in some cases of creating
@@ -467,10 +425,10 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 44a99b0ea2c1..c0c914620c01 100644
+index 1870109b7f10..ad94909b3330 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -414,8 +414,8 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+@@ -417,8 +417,8 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
  ifdef builtin-target
  
  ifdef CONFIG_THIN_ARCHIVES
@@ -481,7 +439,7 @@ index 44a99b0ea2c1..c0c914620c01 100644
    quiet_cmd_link_o_target = AR      $@
  else
    cmd_make_builtin = $(LD) $(ld_flags) -r -o
-@@ -455,7 +455,7 @@ ifdef lib-target
+@@ -458,7 +458,7 @@ ifdef lib-target
  quiet_cmd_link_l_target = AR      $@
  
  ifdef CONFIG_THIN_ARCHIVES
@@ -490,7 +448,7 @@ index 44a99b0ea2c1..c0c914620c01 100644
  else
    cmd_link_l_target = rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@ $(lib-y)
  endif
-@@ -482,7 +482,7 @@ cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secana
+@@ -485,7 +485,7 @@ cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secana
  
  ifdef CONFIG_THIN_ARCHIVES
    quiet_cmd_link_multi-y = AR      $@
@@ -513,13 +471,13 @@ index 43a74357cd90..9cc6e2cc7077 100755
  					${KBUILD_VMLINUX_MAIN}
  	fi
 -- 
-2.29.0
+2.25.1
 
 
-From 5ae025c54d03ac3f8e02fb3a57c06a178be94717 Mon Sep 17 00:00:00 2001
+From f8583ad7f296653620ce5cae81482b577e8e019d Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Fri, 9 Jun 2017 15:24:17 +1000
-Subject: [PATCH 07/50] kbuild: thin archives make default for all archs
+Subject: [PATCH 06/47] kbuild: thin archives make default for all archs
 
 Make thin archives build the default, but keep the config option
 to allow exemptions if any breakage can't be quickly solved.
@@ -545,13 +503,13 @@ index 6e6bcc5632cd..01c09e9038bf 100644
  	  Select this if the architecture wants to use thin archives
  	  instead of ld -r to create the built-in.o files.
 -- 
-2.29.0
+2.25.1
 
 
-From d6195891005a7339cb6f6c448e3b9f9ac411aa87 Mon Sep 17 00:00:00 2001
+From ab051862c2701a121ed24a4ae972e434f3b14c0b Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Tue, 20 Jun 2017 01:52:05 +1000
-Subject: [PATCH 08/50] kbuild: handle libs-y archives separately from
+Subject: [PATCH 07/47] kbuild: handle libs-y archives separately from
  built-in.o archives
 
 The thin archives build currently puts all lib.a and built-in.o
@@ -593,10 +551,10 @@ index 0ff6a466a05b..ac2363ea05c5 100644
 +KBUILD_VMLINUX_INIT, KBUILD_VMLINUX_MAIN, and KBUILD_VMLINUX_LIBS together
 +specify all the object files used to link vmlinux.
 diff --git a/Makefile b/Makefile
-index 5e2cd6c00ba9..5fdb77c6488a 100644
+index 19aade906dbe..eb4add340c36 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -993,19 +993,19 @@ core-y		:= $(patsubst %/, %/built-in.o, $(core-y))
+@@ -1006,19 +1006,19 @@ core-y		:= $(patsubst %/, %/built-in.o, $(core-y))
  drivers-y	:= $(patsubst %/, %/built-in.o, $(drivers-y))
  net-y		:= $(patsubst %/, %/built-in.o, $(net-y))
  libs-y1		:= $(patsubst %/, %/lib.a, $(libs-y))
@@ -724,13 +682,13 @@ index 9cc6e2cc7077..0a08006d600a 100755
  				${1}"
  		fi
 -- 
-2.29.0
+2.25.1
 
 
-From 4fba46ea36f701598c49998cace4e32d9dc78d08 Mon Sep 17 00:00:00 2001
+From d26404ffafc8745b07b13a6b1c19d2d6f1dbb0fa Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:20 +1000
-Subject: [PATCH 09/50] kbuild: allow archs to select link dead code/data
+Subject: [PATCH 08/47] kbuild: allow archs to select link dead code/data
  elimination
 
 Introduce LD_DEAD_CODE_DATA_ELIMINATION option for architectures to
@@ -755,18 +713,18 @@ Signed-off-by: Subhajeet Muhuri <kenny3fcb@gmail.com>
 ---
  Makefile                          |  9 ++++++
  arch/Kconfig                      | 13 ++++++++
- include/asm-generic/vmlinux.lds.h | 52 +++++++++++++++++--------------
+ include/asm-generic/vmlinux.lds.h | 50 +++++++++++++++++--------------
  include/linux/compiler.h          | 23 ++++++++++++++
- include/linux/export.h            | 30 +++++++++---------
- include/linux/init.h              | 38 ++++++++--------------
+ include/linux/export.h            | 30 +++++++++----------
+ include/linux/init.h              | 38 ++++++++---------------
  init/Makefile                     |  2 ++
- 7 files changed, 104 insertions(+), 63 deletions(-)
+ 7 files changed, 103 insertions(+), 62 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 5fdb77c6488a..988de583ad80 100644
+index eb4add340c36..38e52f5a4b0d 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -658,6 +658,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+@@ -670,6 +670,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
  
@@ -778,7 +736,7 @@ index 5fdb77c6488a..988de583ad80 100644
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
  else
-@@ -891,6 +896,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
+@@ -904,6 +909,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
  KBUILD_LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
  LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
  
@@ -814,7 +772,7 @@ index 01c09e9038bf..aefaff3d84c8 100644
  	bool
  	help
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 2a673e31b3dd..4e1793a00bee 100644
+index d3d8ad3469c3..093c2dec66d7 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -196,9 +196,14 @@
@@ -931,16 +889,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
  	}
  
-@@ -430,7 +435,7 @@
-  * during second ld run in second ld pass when generating System.map */
- #define TEXT_TEXT							\
- 		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely)		\
-+		*(.text.hot .text .text.fixup .text.unlikely .text.*)	\
- 		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
-@@ -517,6 +522,7 @@
+@@ -520,6 +525,7 @@
  
  /* init and exit section handling */
  #define INIT_DATA							\
@@ -948,7 +897,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  	*(.init.data)							\
  	MEM_DISCARD(init.data)						\
  	KERNEL_CTORS()							\
-@@ -583,7 +589,7 @@
+@@ -586,7 +592,7 @@
  		BSS_FIRST_SECTIONS					\
  		*(.bss..page_aligned)					\
  		*(.dynbss)						\
@@ -957,7 +906,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		*(COMMON)						\
  	}
  
-@@ -666,12 +672,12 @@
+@@ -669,12 +675,12 @@
  
  #define INIT_CALLS_LEVEL(level)						\
  		VMLINUX_SYMBOL(__initcall##level##_start) = .;		\
@@ -973,7 +922,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		INIT_CALLS_LEVEL(0)					\
  		INIT_CALLS_LEVEL(1)					\
  		INIT_CALLS_LEVEL(2)					\
-@@ -685,21 +691,21 @@
+@@ -688,21 +694,21 @@
  
  #define CON_INITCALL							\
  		VMLINUX_SYMBOL(__con_initcall_start) = .;		\
@@ -1171,13 +1120,13 @@ index 8f7604e47999..2cdeb2b401c7 100644
  obj-y                          += noinitramfs.o
  obj-$(CONFIG_BLK_DEV_INITRD)   += initramfs.o
 -- 
-2.29.0
+2.25.1
 
 
-From d0ee4ca875c893c82ca3b86b24ca7b9a02c56085 Mon Sep 17 00:00:00 2001
+From 63d89ea62e2140813ef67a9b96b24108fc92f847 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 14 Sep 2016 12:24:03 +1000
-Subject: [PATCH 10/50] kbuild: -ffunction-sections fix for archs with
+Subject: [PATCH 09/47] kbuild: -ffunction-sections fix for archs with
  conflicting sections
 
 Enabling -ffunction-sections modified the generic linker script to
@@ -1193,8 +1142,8 @@ Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michal Marek <mmarek@suse.com>
 ---
  arch/Kconfig                      |  4 +++-
- include/asm-generic/vmlinux.lds.h | 15 ++++++++++-----
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ include/asm-generic/vmlinux.lds.h | 13 +++++++++----
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
 diff --git a/arch/Kconfig b/arch/Kconfig
 index aefaff3d84c8..3945464b9505 100644
@@ -1212,7 +1161,7 @@ index aefaff3d84c8..3945464b9505 100644
  config HAVE_ARCH_WITHIN_STACK_FRAMES
  	bool
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 4e1793a00bee..08ca3d8e5471 100644
+index 093c2dec66d7..efe27ca47eca 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -198,9 +198,9 @@
@@ -1228,7 +1177,7 @@ index 4e1793a00bee..08ca3d8e5471 100644
   */
  #define DATA_DATA							\
  	*(.data .data.[0-9a-zA-Z_]*)					\
-@@ -432,10 +432,15 @@
+@@ -432,7 +432,12 @@
  	}
  
  /* .text section. Map to function alignment to avoid address changes
@@ -1241,19 +1190,15 @@ index 4e1793a00bee..08ca3d8e5471 100644
 + * conflicting section names, and must pull in .text.[0-9a-zA-Z_]* */
  #define TEXT_TEXT							\
  		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely .text.*)	\
-+		*(.text.hot .text .text.fixup .text.unlikely)		\
- 		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
+ 		*(.text.hot .text.hot.*)				\
 -- 
-2.29.0
+2.25.1
 
 
-From a2e8ad6fccdb358edb466e846e5c561a9824d5f8 Mon Sep 17 00:00:00 2001
+From 44772130fc13335e6a1c242d7208085e5ba7c0b9 Mon Sep 17 00:00:00 2001
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 Date: Fri, 14 Apr 2017 15:17:26 +0900
-Subject: [PATCH 11/50] kbuild: avoid conflict between -ffunction-sections and
+Subject: [PATCH 10/47] kbuild: avoid conflict between -ffunction-sections and
  -pg on gcc-4.7
 
 Arnd Bergmann reported:
@@ -1277,10 +1222,10 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 988de583ad80..c8570adc71fa 100644
+index 38e52f5a4b0d..d11b6d9aaae6 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -658,11 +658,6 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+@@ -670,11 +670,6 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
  
@@ -1292,7 +1237,7 @@ index 988de583ad80..c8570adc71fa 100644
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
  else
-@@ -820,6 +815,11 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+@@ -839,6 +834,11 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
  endif
  
@@ -1305,13 +1250,13 @@ index 988de583ad80..c8570adc71fa 100644
  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  CHECKFLAGS     += $(NOSTDINC_FLAGS)
 -- 
-2.29.0
+2.25.1
 
 
-From d129ff63b8c29c2788fb9a0062f2cbdb0fe7ce2f Mon Sep 17 00:00:00 2001
+From f969b303cafa8826366e8051c1929e5b89a8f58c Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:41 +1100
-Subject: [PATCH 12/50] kbuild: keep data tables through dead code elimination
+Subject: [PATCH 11/47] kbuild: keep data tables through dead code elimination
 
 When CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is enabled we must ensure
 that we still keep various programatically-accessed tables.
@@ -1328,7 +1273,7 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 34 insertions(+), 34 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 08ca3d8e5471..54ecdedb14c7 100644
+index efe27ca47eca..8c17f5fa0652 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -114,7 +114,7 @@
@@ -1511,7 +1456,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___modver) = .;			\
  		. = ALIGN((align));					\
  		VMLINUX_SYMBOL(__end_rodata) = .;			\
-@@ -501,7 +501,7 @@
+@@ -504,7 +504,7 @@
  	. = ALIGN(align);						\
  	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__start___ex_table) = .;			\
@@ -1520,7 +1465,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___ex_table) = .;			\
  	}
  
-@@ -517,9 +517,9 @@
+@@ -520,9 +520,9 @@
  #ifdef CONFIG_CONSTRUCTORS
  #define KERNEL_CTORS()	. = ALIGN(8);			   \
  			VMLINUX_SYMBOL(__ctors_start) = .; \
@@ -1533,7 +1478,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  			VMLINUX_SYMBOL(__ctors_end) = .;
  #else
  #define KERNEL_CTORS()
-@@ -643,7 +643,7 @@
+@@ -646,7 +646,7 @@
  	. = ALIGN(8);							\
  	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__start___bug_table) = .;		\
@@ -1542,7 +1487,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___bug_table) = .;			\
  	}
  #else
-@@ -655,7 +655,7 @@
+@@ -658,7 +658,7 @@
  	. = ALIGN(4);							\
  	.tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__tracedata_start) = .;			\
@@ -1551,7 +1496,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__tracedata_end) = .;			\
  	}
  #else
-@@ -672,7 +672,7 @@
+@@ -675,7 +675,7 @@
  #define INIT_SETUP(initsetup_align)					\
  		. = ALIGN(initsetup_align);				\
  		VMLINUX_SYMBOL(__setup_start) = .;			\
@@ -1561,13 +1506,13 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  
  #define INIT_CALLS_LEVEL(level)						\
 -- 
-2.29.0
+2.25.1
 
 
-From 238d0b76353b68a14d0334a807e1f59de631ea18 Mon Sep 17 00:00:00 2001
+From 26f490512d203bda6a19775aa8cf5f57b6c197f4 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 26 Jul 2017 22:46:27 +1000
-Subject: [PATCH 13/50] kbuild: linker script do not match C names unless
+Subject: [PATCH 12/47] kbuild: linker script do not match C names unless
  LD_DEAD_CODE_DATA_ELIMINATION is configured
 
 The .data and .bss sections were modified in the generic linker script to
@@ -1594,7 +1539,7 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  1 file changed, 26 insertions(+), 12 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 54ecdedb14c7..d0214819a311 100644
+index 8c17f5fa0652..4635869dbe88 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -59,6 +59,22 @@
@@ -1634,7 +1579,7 @@ index 54ecdedb14c7..d0214819a311 100644
  	*(.ref.data)							\
  	*(.data..shared_aligned) /* percpu related */			\
  	MEM_KEEP(init.data)						\
-@@ -431,16 +444,17 @@
+@@ -431,17 +444,18 @@
  		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
  	}
  
@@ -1654,12 +1599,13 @@ index 54ecdedb14c7..d0214819a311 100644
 + */
  #define TEXT_TEXT							\
  		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely)		\
-+		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely)	\
+ 		*(.text.hot .text.hot.*)				\
+-		*(.text .text.fixup)					\
++		*(TEXT_MAIN .text.fixup)					\
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
  		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
-@@ -594,7 +608,7 @@
+@@ -597,7 +611,7 @@
  		BSS_FIRST_SECTIONS					\
  		*(.bss..page_aligned)					\
  		*(.dynbss)						\
@@ -1669,13 +1615,13 @@ index 54ecdedb14c7..d0214819a311 100644
  	}
  
 -- 
-2.29.0
+2.25.1
 
 
-From b965686e3ac1bcf4ef2144dec28c97e995c1c331 Mon Sep 17 00:00:00 2001
+From a83fc407fbf57eb11c0021d4b4c216f274ccb3a7 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 10 Oct 2017 10:58:53 -0700
-Subject: [PATCH 14/50] FROMLIST: kbuild: fix LD_DEAD_CODE_DATA_ELIMINATION
+Subject: [PATCH 13/47] FROMLIST: kbuild: fix LD_DEAD_CODE_DATA_ELIMINATION
 
 Don't remove .head.text or .exitcall.exit when linking with --gc-sections,
 and include .init.text.* in .init.text and .init.rodata.* in .init.rodata.
@@ -1691,7 +1637,7 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index d0214819a311..98aed11452ad 100644
+index 4635869dbe88..9c29088acef6 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -105,7 +105,7 @@
@@ -1703,7 +1649,7 @@ index d0214819a311..98aed11452ad 100644
  			VMLINUX_SYMBOL(__stop_mcount_loc) = .;
  #else
  #define MCOUNT_REC()
-@@ -501,7 +501,7 @@
+@@ -504,7 +504,7 @@
  		VMLINUX_SYMBOL(__softirqentry_text_end) = .;
  
  /* Section used for early init (in .S files) */
@@ -1712,7 +1658,7 @@ index d0214819a311..98aed11452ad 100644
  
  #define HEAD_TEXT_SECTION							\
  	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {		\
-@@ -546,7 +546,7 @@
+@@ -549,7 +549,7 @@
  	MEM_DISCARD(init.data)						\
  	KERNEL_CTORS()							\
  	MCOUNT_REC()							\
@@ -1721,7 +1667,7 @@ index d0214819a311..98aed11452ad 100644
  	FTRACE_EVENTS()							\
  	TRACE_SYSCALLS()						\
  	KPROBE_BLACKLIST()						\
-@@ -564,7 +564,7 @@
+@@ -567,7 +567,7 @@
  	EARLYCON_TABLE()
  
  #define INIT_TEXT							\
@@ -1730,7 +1676,7 @@ index d0214819a311..98aed11452ad 100644
  	*(.text.startup)						\
  	MEM_DISCARD(init.text)
  
-@@ -581,7 +581,7 @@
+@@ -584,7 +584,7 @@
  	MEM_DISCARD(exit.text)
  
  #define EXIT_CALL							\
@@ -1740,13 +1686,13 @@ index d0214819a311..98aed11452ad 100644
  /*
   * bss (Block Started by Symbol) - uninitialized data
 -- 
-2.29.0
+2.25.1
 
 
-From d8783c44967aa669e086bbd3ff81c0d86bc282eb Mon Sep 17 00:00:00 2001
+From c4c55d282d7d80960f107a75bdc0b25696f35e54 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 13 Feb 2018 14:00:14 -0800
-Subject: [PATCH 15/50] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
+Subject: [PATCH 14/47] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
 
 Keep .entry.tramp.text to avoid the "Entry trampoline text too big"
 error while linking.
@@ -1773,13 +1719,13 @@ index 718f4c4be05c..fe14d821386f 100644
  	VMLINUX_SYMBOL(__entry_tramp_text_end) = .;
  #else
 -- 
-2.29.0
+2.25.1
 
 
-From 6f6be928ec9c40945a3cb4742657c358e5a698d4 Mon Sep 17 00:00:00 2001
+From 950d7c4cc861a58363b1b0c5c8a263f50f80349a Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 10 Oct 2017 10:56:17 -0700
-Subject: [PATCH 16/50] FROMLIST: BACKPORT: arm64: keep .altinstructions and
+Subject: [PATCH 15/47] FROMLIST: BACKPORT: arm64: keep .altinstructions and
  .altinstr_replacement
 
 Make sure the linker doesn't remove .altinstructions or
@@ -1814,13 +1760,13 @@ index fe14d821386f..d0cf2910d808 100644
  	.rela.dyn : ALIGN(8) {
  		*(.rela .rela*)
 -- 
-2.29.0
+2.25.1
 
 
-From 392a73a27ac1838142b4ba0a697155d419f7258e Mon Sep 17 00:00:00 2001
+From c968a6b0cfc8dddbbfed9fea1b9214c93451d704 Mon Sep 17 00:00:00 2001
 From: Al Viro <viro@zeniv.linux.org.uk>
 Date: Fri, 15 Jan 2016 14:01:22 -0500
-Subject: [PATCH 17/50] handle exports in lib-y objects reliably
+Subject: [PATCH 16/47] handle exports in lib-y objects reliably
 
 Collect the symbols exported by anything that goes into lib.a and
 add an empty object (lib-exports.o) with explicit undefs for each
@@ -1891,7 +1837,7 @@ index 98771e2a78af..1f3d3877618f 100644
  
  AFLAGS___divdi3.o	=
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index c0c914620c01..427921235d6e 100644
+index ad94909b3330..4f6fe63f5221 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
 @@ -86,6 +86,7 @@ endif
@@ -1902,7 +1848,7 @@ index c0c914620c01..427921235d6e 100644
  endif
  
  ifneq ($(strip $(obj-y) $(obj-m) $(obj-) $(subdir-m) $(lib-target)),)
-@@ -464,6 +465,25 @@ $(lib-target): $(lib-y) FORCE
+@@ -467,6 +468,25 @@ $(lib-target): $(lib-y) FORCE
  	$(call if_changed,link_l_target)
  
  targets += $(lib-target)
@@ -1929,13 +1875,13 @@ index c0c914620c01..427921235d6e 100644
  
  #
 -- 
-2.29.0
+2.25.1
 
 
-From b377a09197922d59d905fdaaaa320abe4b1db397 Mon Sep 17 00:00:00 2001
+From 2924e4f9950b4873f82527e39a4a104743c82981 Mon Sep 17 00:00:00 2001
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Date: Wed, 16 Nov 2016 19:28:39 -0500
-Subject: [PATCH 18/50] kbuild: cmd_export_list: tighten the sed script
+Subject: [PATCH 17/47] kbuild: cmd_export_list: tighten the sed script
 
 When LTO is used, some ___ksymtab_string sections are seen by this sed
 script, creating lines containing a single ) such as:
@@ -1955,10 +1901,10 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 427921235d6e..b05ff05e522c 100644
+index 4f6fe63f5221..663d297b2baa 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -476,7 +476,7 @@ endif
+@@ -479,7 +479,7 @@ endif
  
  quiet_cmd_export_list = EXPORTS $@
  cmd_export_list = $(OBJDUMP) -h $< | \
@@ -1968,13 +1914,13 @@ index 427921235d6e..b05ff05e522c 100644
  	$(AR) rcs$(KBUILD_ARFLAGS) $(dummy-object);\
  	$(LD) $(ld_flags) -r -o $@ -T $(ksyms-lds) $(dummy-object);\
 -- 
-2.29.0
+2.25.1
 
 
-From 6a23e916cae83716f872eecd501fbba028f12726 Mon Sep 17 00:00:00 2001
+From b54fc9bd3f52cba91b94366a6b6c529d1edb82da Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:40 +1100
-Subject: [PATCH 19/50] kbuild: improve linker compatibility with lib-ksyms.o
+Subject: [PATCH 18/47] kbuild: improve linker compatibility with lib-ksyms.o
  build
 
 lib-ksyms.o is created by linking an empty input file with a linker
@@ -1999,10 +1945,10 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index b05ff05e522c..475fc25397d4 100644
+index 663d297b2baa..5c89b33a9237 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -478,7 +478,7 @@ quiet_cmd_export_list = EXPORTS $@
+@@ -481,7 +481,7 @@ quiet_cmd_export_list = EXPORTS $@
  cmd_export_list = $(OBJDUMP) -h $< | \
  	sed -ne '/___ksymtab/s/.*+\([^ ]*\).*/$(ref_prefix)\1)/p' >$(ksyms-lds);\
  	rm -f $(dummy-object);\
@@ -2012,13 +1958,13 @@ index b05ff05e522c..475fc25397d4 100644
  	rm $(dummy-object) $(ksyms-lds)
  
 -- 
-2.29.0
+2.25.1
 
 
-From 8f20ea61b6c33a5b4ec21b7a2e9be6e44e45236d Mon Sep 17 00:00:00 2001
+From d253d662212026de96921bfcfa000dd8c22ee14e Mon Sep 17 00:00:00 2001
 From: Michal Marek <mmarek@suse.com>
 Date: Tue, 27 Oct 2015 14:02:24 +0100
-Subject: [PATCH 20/50] kbuild: Allow to specify composite modules with
+Subject: [PATCH 19/47] kbuild: Allow to specify composite modules with
  modname-m
 
 This allows to write
@@ -2082,10 +2028,10 @@ index 5f0937609465..23f961a8fb92 100644
  #else
  static inline int logfs_get_sb_mtd(struct logfs_super *s, int mtdnr)
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 475fc25397d4..a88795d1a5b6 100644
+index 5c89b33a9237..6df7f4d6660e 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -493,10 +493,14 @@ endif
+@@ -496,10 +496,14 @@ endif
  #    <composite-object>-objs := <list of .o files>
  #  or
  #    <composite-object>-y    := <list of .o files>
@@ -2101,7 +2047,7 @@ index 475fc25397d4..a88795d1a5b6 100644
  
  cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secanalysis)
  
-@@ -518,7 +522,7 @@ $(call multi_depend, $(multi-used-y), .o, -objs -y)
+@@ -521,7 +525,7 @@ $(call multi_depend, $(multi-used-y), .o, -objs -y)
  $(multi-used-m): FORCE
  	$(call if_changed,link_multi-m)
  	@{ echo $(@:.o=.ko); echo $(link_multi_deps); } > $(MODVERDIR)/$(@F:.o=.mod)
@@ -2133,13 +2079,13 @@ index 5a93712ea570..2daf8d6e49a1 100644
  # Add subdir path
  
 -- 
-2.29.0
+2.25.1
 
 
-From cbe8784e812dbec73a26ff918e5da5dbcad5e18a Mon Sep 17 00:00:00 2001
+From aa0f9d6722e363ca2f2b446e4d420abf822adfa7 Mon Sep 17 00:00:00 2001
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Date: Thu, 21 Jan 2016 17:07:24 -0500
-Subject: [PATCH 21/50] kbuild: record needed exported symbols for modules
+Subject: [PATCH 20/47] kbuild: record needed exported symbols for modules
 
 Kernel modules are partially linked object files with some undefined
 symbols that are expected to be matched with EXPORT_SYMBOL() entries
@@ -2168,10 +2114,10 @@ Acked-by: Rusty Russell <rusty@rustcorp.com.au>
  1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index a88795d1a5b6..0210635a95f6 100644
+index 6df7f4d6660e..e84e71fe2cb7 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -278,6 +278,13 @@ define rule_as_o_S
+@@ -281,6 +281,13 @@ define rule_as_o_S
         mv -f $(dot-target).tmp $(dot-target).cmd
  endef
  
@@ -2185,7 +2131,7 @@ index a88795d1a5b6..0210635a95f6 100644
  # Built-in and composite module parts
  $(obj)/%.o: $(src)/%.c $(recordmcount_source) FORCE
  	$(call cmd,force_checksrc)
-@@ -288,7 +295,8 @@ $(obj)/%.o: $(src)/%.c $(recordmcount_source) FORCE
+@@ -291,7 +298,8 @@ $(obj)/%.o: $(src)/%.c $(recordmcount_source) FORCE
  $(single-used-m): $(obj)/%.o: $(src)/%.c $(recordmcount_source) FORCE
  	$(call cmd,force_checksrc)
  	$(call if_changed_rule,cc_o_c)
@@ -2195,7 +2141,7 @@ index a88795d1a5b6..0210635a95f6 100644
  
  quiet_cmd_cc_lst_c = MKLST   $@
        cmd_cc_lst_c = $(CC) $(c_flags) -g -c -o $*.o $< && \
-@@ -521,7 +529,8 @@ $(call multi_depend, $(multi-used-y), .o, -objs -y)
+@@ -524,7 +532,8 @@ $(call multi_depend, $(multi-used-y), .o, -objs -y)
  
  $(multi-used-m): FORCE
  	$(call if_changed,link_multi-m)
@@ -2206,13 +2152,13 @@ index a88795d1a5b6..0210635a95f6 100644
  
  targets += $(multi-used-y) $(multi-used-m)
 -- 
-2.29.0
+2.25.1
 
 
-From 48dde9db2991d1825e36cef9c33d14a43b72b8b7 Mon Sep 17 00:00:00 2001
+From 8fdaf4ae8e0d501f3d883566ca2979c012c7681c Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:21 +1000
-Subject: [PATCH 22/50] kbuild: add arch specific post-link Makefile
+Subject: [PATCH 21/47] kbuild: add arch specific post-link Makefile
 
 Allow architectures to create arch/xxx/Makefile.postlink with targets
 for vmlinux, modules.ko, and clean, which will be invoked after final
@@ -2264,10 +2210,10 @@ index 64c84e2d06c0..fba7bed6193a 100644
  
  The kernel includes a set of headers that is exported to userspace.
 diff --git a/Makefile b/Makefile
-index c8570adc71fa..b8405336f8d9 100644
+index d11b6d9aaae6..ef4f1d910ab6 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1016,9 +1016,12 @@ export KBUILD_ALLDIRS := $(sort $(filter-out arch/%,$(vmlinux-alldirs)) arch Doc
+@@ -1029,9 +1029,12 @@ export KBUILD_ALLDIRS := $(sort $(filter-out arch/%,$(vmlinux-alldirs)) arch Doc
  
  vmlinux-deps := $(KBUILD_LDS) $(KBUILD_VMLINUX_INIT) $(KBUILD_VMLINUX_MAIN) $(KBUILD_VMLINUX_LIBS)
  
@@ -2283,7 +2229,7 @@ index c8570adc71fa..b8405336f8d9 100644
  
  # Include targets which we want to
  # execute if the rest of the kernel build went well.
-@@ -1307,6 +1310,7 @@ $(clean-dirs):
+@@ -1320,6 +1323,7 @@ $(clean-dirs):
  
  vmlinuxclean:
  	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/link-vmlinux.sh clean
@@ -2320,13 +2266,13 @@ index 7718a64b1cd1..8cb7971b3f25 100644
  targets += $(modules)
  
 -- 
-2.29.0
+2.25.1
 
 
-From 7c170b583b390f461581e95f75d6cc63a0a73afc Mon Sep 17 00:00:00 2001
+From 324824a8a3f5dc6fbcbff1d156be3e73a7e538f6 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 17 Nov 2017 15:37:42 -0800
-Subject: [PATCH 23/50] FROMLIST: kbuild: add __cc-ifversion and
+Subject: [PATCH 22/47] FROMLIST: kbuild: add __cc-ifversion and
  compiler-specific variants
 
 This change adds macros for testing both compiler name and
@@ -2399,13 +2345,13 @@ index 1112dd94b440..f955e3556942 100644
  # cc-ldoption
  # Usage: ldflags += $(call cc-ldoption, -Wl$(comma)--hash-style=both)
 -- 
-2.29.0
+2.25.1
 
 
-From f4eb4574fc1913351d8f5d124a132317e2696783 Mon Sep 17 00:00:00 2001
+From bffb19973fb928d21e4b6d54c92d9b7b38d74cd8 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 17 Nov 2017 15:55:54 -0800
-Subject: [PATCH 24/50] FROMLIST: kbuild: add __ld-ifversion and
+Subject: [PATCH 23/47] FROMLIST: kbuild: add __ld-ifversion and
  linker-specific macros
 
 Add macros for testing both linker name and version.
@@ -2443,13 +2389,13 @@ index f955e3556942..7ef5293a1b37 100644
  
  ###
 -- 
-2.29.0
+2.25.1
 
 
-From a4b1594134e54a491d84eaf55900676169ee7db2 Mon Sep 17 00:00:00 2001
+From 3c5dfd05c15ed851ac46e3da74f64ec94626dff3 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Wed, 25 Oct 2017 12:33:58 -0700
-Subject: [PATCH 25/50] FROMLIST: kbuild: add ld-name macro
+Subject: [PATCH 24/47] FROMLIST: kbuild: add ld-name macro
 
 GNU gold may require different flags than GNU ld. Add a macro for
 detecting the linker.
@@ -2480,13 +2426,13 @@ index 7ef5293a1b37..fcf10806de4d 100644
  # Note this is mainly for HJ Lu's 3 number binutil versions
  ld-version = $(shell $(LD) --version | $(srctree)/scripts/ld-version.sh)
 -- 
-2.29.0
+2.25.1
 
 
-From b3203178581a3349d7b12c9e057a4537f4614e16 Mon Sep 17 00:00:00 2001
+From badbc237d211daec603957908b83892e2799d800 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 28 Nov 2017 08:48:49 -0800
-Subject: [PATCH 26/50] FROMLIST: kbuild: add support for clang LTO
+Subject: [PATCH 25/47] FROMLIST: kbuild: add support for clang LTO
 
 This change adds the configuration option CONFIG_LTO_CLANG, and
 build system support for clang's Link Time Optimization (LTO). In
@@ -2524,18 +2470,18 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  5 files changed, 271 insertions(+), 25 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index b8405336f8d9..fb19ec025ab8 100644
+index ef4f1d910ab6..39568b8b453c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -342,6 +342,7 @@ include scripts/Kbuild.include
- AS		= $(CROSS_COMPILE)as
- LD		= $(CROSS_COMPILE)ld
- CC		= $(CCACHE) $(CROSS_COMPILE)gcc
+@@ -353,6 +353,7 @@ CC		= $(CCACHE) $(CROSS_COMPILE)gcc
+ else
+ CC		= $(CROSS_COMPILE)gcc
+ endif
 +LDGOLD		= $(CROSS_COMPILE)ld.gold
  CPP		= $(CC) -E
  AR		= $(CROSS_COMPILE)ar
  NM		= $(CROSS_COMPILE)nm
-@@ -632,6 +633,20 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
+@@ -644,6 +645,20 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
  KBUILD_AFLAGS	+= $(CLANG_FLAGS)
  endif
  
@@ -2556,7 +2502,7 @@ index b8405336f8d9..fb19ec025ab8 100644
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
  # values of the respective KBUILD_* variables
  ARCH_CPPFLAGS :=
-@@ -820,6 +835,26 @@ KBUILD_CFLAGS	+= $(call cc-option,-ffunction-sections,)
+@@ -839,6 +854,26 @@ KBUILD_CFLAGS	+= $(call cc-option,-ffunction-sections,)
  KBUILD_CFLAGS	+= $(call cc-option,-fdata-sections,)
  endif
  
@@ -2583,7 +2529,7 @@ index b8405336f8d9..fb19ec025ab8 100644
  # arch Makefile may override CC so keep this after arch Makefile is included
  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  CHECKFLAGS     += $(NOSTDINC_FLAGS)
-@@ -1100,6 +1135,23 @@ prepare0: archprepare
+@@ -1113,6 +1148,23 @@ prepare0: archprepare
  # All the preparing..
  prepare: prepare0
  
@@ -2607,7 +2553,7 @@ index b8405336f8d9..fb19ec025ab8 100644
  # Generate some files
  # ---------------------------------------------------------------------------
  
-@@ -1556,8 +1608,8 @@ clean: $(clean-dirs)
+@@ -1569,8 +1621,8 @@ clean: $(clean-dirs)
  		-o -name '*.symtypes' -o -name 'modules.order' \
  		-o -name modules.builtin -o -name '.tmp_*.o.*' \
  		-o -name '*.ll' \
@@ -2670,7 +2616,7 @@ index 3945464b9505..3fbfca486a68 100644
  	bool
  	help
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 0210635a95f6..fdedc073956a 100644
+index e84e71fe2cb7..a5f987c23a1e 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
 @@ -213,6 +213,23 @@ else
@@ -2704,8 +2650,8 @@ index 0210635a95f6..fdedc073956a 100644
 +endif
  
  ifdef CONFIG_FTRACE_MCOUNT_RECORD
- ifdef BUILD_C_RECORDMCOUNT
-@@ -422,8 +440,29 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+ ifndef CC_USING_RECORD_MCOUNT
+@@ -425,8 +443,29 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
  #
  ifdef builtin-target
  
@@ -2736,7 +2682,7 @@ index 0210635a95f6..fdedc073956a 100644
    cmd_make_empty_builtin = rm -f $@; $(AR) rcSTP$(KBUILD_ARFLAGS)
    quiet_cmd_link_o_target = AR      $@
  else
-@@ -464,7 +503,11 @@ ifdef lib-target
+@@ -467,7 +506,11 @@ ifdef lib-target
  quiet_cmd_link_l_target = AR      $@
  
  ifdef CONFIG_THIN_ARCHIVES
@@ -2749,7 +2695,7 @@ index 0210635a95f6..fdedc073956a 100644
  else
    cmd_link_l_target = rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@ $(lib-y)
  endif
-@@ -482,14 +525,36 @@ else
+@@ -485,14 +528,36 @@ else
  ref_prefix = EXTERN(
  endif
  
@@ -2790,7 +2736,7 @@ index 0210635a95f6..fdedc073956a 100644
  $(obj)/lib-ksyms.o: $(lib-target) FORCE
  	$(call if_changed,export_list)
  endif
-@@ -514,23 +579,32 @@ cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secana
+@@ -517,23 +582,32 @@ cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secana
  
  ifdef CONFIG_THIN_ARCHIVES
    quiet_cmd_link_multi-y = AR      $@
@@ -3036,13 +2982,13 @@ index 0a08006d600a..671a3e1a39eb 100755
  kallsyms_vmlinux=""
  if [ -n "${CONFIG_KALLSYMS}" ]; then
 -- 
-2.29.0
+2.25.1
 
 
-From b9be072fd3fef893622c1d0c67d1e877a23504e4 Mon Sep 17 00:00:00 2001
+From 9d56572e8d9abd358feb81aa5db90beff431a579 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 16 Jun 2017 12:52:57 -0700
-Subject: [PATCH 27/50] FROMLIST: BACKPORT: kbuild: fix dynamic ftrace with
+Subject: [PATCH 26/47] FROMLIST: BACKPORT: kbuild: fix dynamic ftrace with
  clang LTO
 
 With CONFIG_LTO_CLANG enabled, LLVM IR won't be compiled into object
@@ -3084,25 +3030,25 @@ index 3fbfca486a68..ce0cc37345c7 100644
  	select THIN_ARCHIVES
  	select LD_DEAD_CODE_DATA_ELIMINATION
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 98aed11452ad..9b30a7c2753f 100644
+index 9c29088acef6..1da732b233ea 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -455,6 +455,7 @@
- #define TEXT_TEXT							\
- 		ALIGN_FUNCTION();					\
- 		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely)	\
+@@ -458,6 +458,7 @@
+ 		*(TEXT_MAIN .text.fixup)					\
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
 +		*(.text..ftrace)					\
  		*(.ref.text)						\
  	MEM_KEEP(init.text)						\
  	MEM_KEEP(exit.text)						\
 diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
-index de179993e039..fd299451aa0b 100644
+index 6851c4214ac6..d4e6f65f6f3e 100644
 --- a/include/linux/compiler-clang.h
 +++ b/include/linux/compiler-clang.h
-@@ -15,3 +15,10 @@
-  * with any version that can compile the kernel
-  */
- #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
+@@ -29,3 +29,10 @@
+     __has_builtin(__builtin_sub_overflow)
+ #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
+ #endif
 +
 +#ifdef CONFIG_LTO_CLANG
 +#ifdef CONFIG_FTRACE_MCOUNT_RECORD
@@ -3126,7 +3072,7 @@ index 3a1c2c92cf72..fc3dea29fe69 100644
   * Assume alignment of return value.
   */
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 89ed01911a9a..21488242ffd6 100644
+index b56b1daa0a59..4dfb13a8147a 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
 @@ -4810,9 +4810,9 @@ static int ftrace_cmp_ips(const void *a, const void *b)
@@ -3143,10 +3089,10 @@ index 89ed01911a9a..21488242ffd6 100644
  	struct ftrace_page *start_pg;
  	struct ftrace_page *pg;
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index fdedc073956a..96cc63281688 100644
+index a5f987c23a1e..6e389fdbf6e7 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -249,6 +249,12 @@ ifdef BUILD_C_RECORDMCOUNT
+@@ -251,6 +251,12 @@ ifdef BUILD_C_RECORDMCOUNT
  ifeq ("$(origin RECORDMCOUNT_WARN)", "command line")
    RECORDMCOUNT_FLAGS = -w
  endif
@@ -3159,7 +3105,7 @@ index fdedc073956a..96cc63281688 100644
  # Due to recursion, we must skip empty.o.
  # The empty.o file is created in the make process in order to determine
  #  the target endianness and word size. It is made before all other C
-@@ -257,23 +263,29 @@ sub_cmd_record_mcount =					\
+@@ -259,17 +265,22 @@ sub_cmd_record_mcount =					\
  	if [ $(@) != "scripts/mod/empty.o" ]; then	\
  		$(objtree)/scripts/recordmcount $(RECORDMCOUNT_FLAGS) "$(@)";	\
  	fi;
@@ -3184,8 +3130,9 @@ index fdedc073956a..96cc63281688 100644
  cmd_record_mcount =						\
  	if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =	\
  	     "$(CC_FLAGS_FTRACE)" ]; then			\
- 		$(sub_cmd_record_mcount)			\
+@@ -277,6 +288,7 @@ cmd_record_mcount =						\
  	fi;
+ endif # CC_USING_RECORD_MCOUNT
  endif
 +endif # CONFIG_FTRACE_MCOUNT_RECORD
  
@@ -3241,7 +3188,7 @@ index 671a3e1a39eb..db1ed351180f 100755
  
  kallsymso=""
 diff --git a/scripts/recordmcount.c b/scripts/recordmcount.c
-index 7250fb38350c..911275681c82 100644
+index 8cba4c44da4c..bd8ce0a4e337 100644
 --- a/scripts/recordmcount.c
 +++ b/scripts/recordmcount.c
 @@ -368,7 +368,8 @@ is_mcounted_section_name(char const *const txtname)
@@ -3255,13 +3202,13 @@ index 7250fb38350c..911275681c82 100644
  
  /* 32 bit and 64 bit are very similar */
 -- 
-2.29.0
+2.25.1
 
 
-From bada949cc9a318598f0effb6d14ede29cc35c085 Mon Sep 17 00:00:00 2001
+From 09e61c7f498f368b6f0794a8b0574f9f12c52b07 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Mon, 10 Apr 2017 12:32:24 -0700
-Subject: [PATCH 28/50] FROMLIST: scripts/mod: disable LTO for empty.c
+Subject: [PATCH 27/47] FROMLIST: scripts/mod: disable LTO for empty.c
 
 With CONFIG_LTO_CLANG, clang generates LLVM IR instead of ELF object
 files. As empty.o is used for probing target properties, disable LTO
@@ -3287,13 +3234,13 @@ index e0cb2e4a3b15..0a15591c9b5e 100644
  always		:= $(hostprogs-y) empty.o
  
 -- 
-2.29.0
+2.25.1
 
 
-From baeae8a4fc894eecdec44d43d038a1a3714ff45a Mon Sep 17 00:00:00 2001
+From 4d86dd703d267c6cc6abf7b1cd1bb63d7dbe2b49 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Mon, 1 May 2017 11:08:05 -0700
-Subject: [PATCH 29/50] FROMLIST: efi/libstub: disable LTO
+Subject: [PATCH 28/47] FROMLIST: efi/libstub: disable LTO
 
 With CONFIG_LTO_CLANG, we produce LLVM IR instead of object files. Since LTO
 is not really needed here and the Makefile assumes we produce an object file,
@@ -3324,13 +3271,13 @@ index f39dda0a52f9..ca560666a80d 100644
  GCOV_PROFILE			:= n
  KASAN_SANITIZE			:= n
 -- 
-2.29.0
+2.25.1
 
 
-From 8acc398c4de73a8d0ca2c056ed4ceb6efb333636 Mon Sep 17 00:00:00 2001
+From b4a8798f98425be63269e0669216b0deb59c4edb Mon Sep 17 00:00:00 2001
 From: Kees Cook <keescook@chromium.org>
 Date: Wed, 24 Apr 2019 09:55:37 -0700
-Subject: [PATCH 30/50] arm64: sysreg: Make mrs_s and msr_s macros work with
+Subject: [PATCH 29/47] arm64: sysreg: Make mrs_s and msr_s macros work with
  Clang and LTO
 
 Clang's integrated assembler does not allow assembly macros defined
@@ -3602,13 +3549,13 @@ index 9142e082f5f3..c2986a0ffed0 100644
  
  /* vcpu is already in the HYP VA space */
 -- 
-2.29.0
+2.25.1
 
 
-From e5751440d7ec995af885297d6daaa04b825bcf73 Mon Sep 17 00:00:00 2001
+From f7c0eb829da60018592a4158bfcfb29fa732e575 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Thu, 2 Nov 2017 09:34:42 -0700
-Subject: [PATCH 31/50] FROMLIST: BACKPORT: arm64: select
+Subject: [PATCH 30/47] FROMLIST: BACKPORT: arm64: select
  ARCH_SUPPORTS_LTO_CLANG
 
 Allow CONFIG_LTO_CLANG to be enabled for the architecture.
@@ -3635,13 +3582,13 @@ index 33fb9d6c5b7e..69eb6bb6ecea 100644
  	select ARCH_WANT_OPTIONAL_GPIOLIB
  	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
 -- 
-2.29.0
+2.25.1
 
 
-From a748122fdec7b12ae3ee73097c144520f1cd8604 Mon Sep 17 00:00:00 2001
+From 70aa77c4168c72b6fbe2ca94ebf7361cb1006593 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 23:59:19 -0700
-Subject: [PATCH 32/50] arm64: Disable -fwhole-program for vDSO
+Subject: [PATCH 31/47] arm64: Disable -fwhole-program for vDSO
 
 The vDSO library is obviously not self-contained, so it doesn't qualify
 for -fwhole-program. Using -fwhole-program on the vDSO library breaks
@@ -3665,13 +3612,13 @@ index 4adcb532ac6a..6c69d5db9f36 100644
  # Force -O2 to avoid libgcc dependencies
  CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
 -- 
-2.29.0
+2.25.1
 
 
-From 0c906d56d93a5a78cf8dc49fb6832033624305e5 Mon Sep 17 00:00:00 2001
+From d68b45e1f44f7cad23dd95d806c5df202f9c2e21 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Wed, 30 Jan 2019 18:22:58 -0800
-Subject: [PATCH 33/50] ANDROID: scripts/Kbuild: add ld-name support for ld.lld
+Subject: [PATCH 32/47] ANDROID: scripts/Kbuild: add ld-name support for ld.lld
 
 Bug: 63740206
 Change-Id: I0cd9940c2fa07a6bb4573ec8b1edcd21fd1f3a4d
@@ -3708,13 +3655,13 @@ index fcf10806de4d..6a91da466733 100644
  # ld-version
  # Note this is mainly for HJ Lu's 3 number binutil versions
 -- 
-2.29.0
+2.25.1
 
 
-From 1e0679c56452637224fe94e9ee2dd67e526e9c93 Mon Sep 17 00:00:00 2001
+From 6e50341e1b76f7ba44e90dce2b989521ffc077c4 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Mon, 11 Feb 2019 14:04:46 -0800
-Subject: [PATCH 34/50] BACKPORT: FROMLIST: Makefile: lld: set -O2 linker flag
+Subject: [PATCH 33/47] BACKPORT: FROMLIST: Makefile: lld: set -O2 linker flag
  when linking with LLD
 
 For arm64:
@@ -3737,10 +3684,10 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 4 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index fb19ec025ab8..c3bef65d0d59 100644
+index 39568b8b453c..ad8b0886512c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -774,6 +774,10 @@ else
+@@ -786,6 +786,10 @@ else
  KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
  endif
  
@@ -3752,13 +3699,13 @@ index fb19ec025ab8..c3bef65d0d59 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
 -- 
-2.29.0
+2.25.1
 
 
-From 3028645af3e26c3cba3a61e81731b7f744c8e1f8 Mon Sep 17 00:00:00 2001
+From 0560a39c59f6c9ff21ff119c8f400c9354d7344c Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Wed, 30 Jan 2019 18:23:26 -0800
-Subject: [PATCH 35/50] BACKPORT: FROMLIST: Makefile: lld: tell clang to use
+Subject: [PATCH 34/47] BACKPORT: FROMLIST: Makefile: lld: tell clang to use
  lld
 
 This is needed because clang doesn't select which linker to use based on
@@ -3780,10 +3727,10 @@ Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index c3bef65d0d59..4c5e77911fdd 100644
+index ad8b0886512c..bb62c0d4c419 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -631,6 +631,9 @@ CLANG_FLAGS    += $(call cc-option, -Wno-misleading-indentation)
+@@ -643,6 +643,9 @@ CLANG_FLAGS    += $(call cc-option, -Wno-misleading-indentation)
  CLANG_FLAGS    += $(call cc-option, -Wno-bool-operation)
  KBUILD_CFLAGS	+= $(CLANG_FLAGS)
  KBUILD_AFLAGS	+= $(CLANG_FLAGS)
@@ -3794,13 +3741,13 @@ index c3bef65d0d59..4c5e77911fdd 100644
  
  # Make toolchain changes before including arch/$(SRCARCH)/Makefile to ensure
 -- 
-2.29.0
+2.25.1
 
 
-From 1688131ed0c3d5ff91400f28c9944cc489c280a5 Mon Sep 17 00:00:00 2001
+From 46ff7d24e9735894ea10727b753411eb1616c839 Mon Sep 17 00:00:00 2001
 From: Nick Desaulniers <ndesaulniers@google.com>
 Date: Tue, 19 Feb 2019 16:06:28 -0800
-Subject: [PATCH 36/50] ANDROID: Makefile: set -Qunused-arguments sooner
+Subject: [PATCH 35/47] ANDROID: Makefile: set -Qunused-arguments sooner
 
 The recently added support for -fuse-ld=lld is problematic for kbuild in
 that cc-option tests that add -Werror -c -fuse-ld=lld, as -c implies
@@ -3824,10 +3771,10 @@ Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 4c5e77911fdd..17aa6a0ee7c1 100644
+index bb62c0d4c419..213ff3aefac7 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -634,6 +634,7 @@ KBUILD_AFLAGS	+= $(CLANG_FLAGS)
+@@ -646,6 +646,7 @@ KBUILD_AFLAGS	+= $(CLANG_FLAGS)
  ifeq ($(ld-name),lld)
  KBUILD_CFLAGS += -fuse-ld=lld
  endif
@@ -3835,7 +3782,7 @@ index 4c5e77911fdd..17aa6a0ee7c1 100644
  endif
  
  # Make toolchain changes before including arch/$(SRCARCH)/Makefile to ensure
-@@ -756,7 +757,6 @@ ifdef CONFIG_KCOV
+@@ -768,7 +769,6 @@ ifdef CONFIG_KCOV
  endif
  
  ifeq ($(cc-name),clang)
@@ -3844,13 +3791,13 @@ index 4c5e77911fdd..17aa6a0ee7c1 100644
  KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
  KBUILD_CFLAGS += $(call cc-disable-warning, duplicate-decl-specifier)
 -- 
-2.29.0
+2.25.1
 
 
-From cffd164eb12db936b1d3cf7d4e722c5b15576491 Mon Sep 17 00:00:00 2001
+From 9e2c622de410c79bf4010057d81cde7a23c5714e Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 12 Feb 2019 10:58:47 -0800
-Subject: [PATCH 37/50] ANDROID: kbuild: allow lld to be used with
+Subject: [PATCH 36/47] ANDROID: kbuild: allow lld to be used with
  CONFIG_LTO_CLANG
 
 Bug: 63740206
@@ -3862,10 +3809,10 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 17aa6a0ee7c1..6546595d27ac 100644
+index 213ff3aefac7..fca2599fa7a2 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -640,10 +640,12 @@ endif
+@@ -652,10 +652,12 @@ endif
  # Make toolchain changes before including arch/$(SRCARCH)/Makefile to ensure
  # ar/cc/ld-* macros return correct values.
  ifdef CONFIG_LTO_CLANG
@@ -3878,7 +3825,7 @@ index 17aa6a0ee7c1..6546595d27ac 100644
  # use llvm-ar for building symbol tables from IR files, and llvm-dis instead
  # of objdump for processing symbol versions and exports
  LLVM_AR		:= llvm-ar
-@@ -1147,8 +1149,10 @@ ifdef CONFIG_LTO_CLANG
+@@ -1160,8 +1162,10 @@ ifdef CONFIG_LTO_CLANG
    ifneq ($(call clang-ifversion, -ge, 0500, y), y)
  	@echo Cannot use CONFIG_LTO_CLANG: requires clang 5.0 or later >&2 && exit 1
    endif
@@ -3892,13 +3839,13 @@ index 17aa6a0ee7c1..6546595d27ac 100644
  endif
  # Make sure compiler supports LTO flags
 -- 
-2.29.0
+2.25.1
 
 
-From 44f3b4a398453e75c799b071d9b1594341ec18c0 Mon Sep 17 00:00:00 2001
+From f4b8365cb8052a6cb64ebf8d3bf149d649ae1c33 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 12 Feb 2019 11:00:51 -0800
-Subject: [PATCH 38/50] ANDROID: arm64: add atomic_ll_sc.o to obj-y if using
+Subject: [PATCH 37/47] ANDROID: arm64: add atomic_ll_sc.o to obj-y if using
  lld
 
 __ll_sc_* functions are only referenced in inline assembly, which means lld
@@ -3946,13 +3893,13 @@ index d1bc7f9086f3..38bea7aade2a 100644
  		   -ffixed-x3 -ffixed-x4 -ffixed-x5 -ffixed-x6		\
  		   -ffixed-x7 -fcall-saved-x8 -fcall-saved-x9		\
 -- 
-2.29.0
+2.25.1
 
 
-From 0ee89abbf2f8d73444820a71b7d095597476ba20 Mon Sep 17 00:00:00 2001
+From 21a62dbaff15f176f9418106f45c8d2e78717682 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Thu, 1 Aug 2019 12:45:43 -0700
-Subject: [PATCH 39/50] ANDROID: add support for ThinLTO
+Subject: [PATCH 38/47] ANDROID: add support for ThinLTO
 
 This change adds support for ThinLTO, which greatly improves build times
 over full LTO while retaining most of the performance benefits:
@@ -3969,10 +3916,10 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  3 files changed, 24 insertions(+), 6 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 6546595d27ac..604839d04044 100644
+index fca2599fa7a2..084d14fdc155 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -649,8 +649,8 @@ endif
+@@ -661,8 +661,8 @@ endif
  # use llvm-ar for building symbol tables from IR files, and llvm-dis instead
  # of objdump for processing symbol versions and exports
  LLVM_AR		:= llvm-ar
@@ -3983,7 +3930,7 @@ index 6546595d27ac..604839d04044 100644
  endif
  
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
-@@ -845,10 +845,16 @@ KBUILD_CFLAGS	+= $(call cc-option,-fdata-sections,)
+@@ -864,10 +864,16 @@ KBUILD_CFLAGS	+= $(call cc-option,-fdata-sections,)
  endif
  
  ifdef CONFIG_LTO_CLANG
@@ -4026,7 +3973,7 @@ index ce0cc37345c7..7b96e195236d 100644
  	prompt "Link-Time Optimization (LTO) (EXPERIMENTAL)"
  	default LTO_NONE
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 96cc63281688..b62062095e4d 100644
+index 6e389fdbf6e7..0231390be4ba 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
 @@ -223,7 +223,7 @@ cmd_modversions_c =								\
@@ -4038,7 +3985,7 @@ index 96cc63281688..b62062095e4d 100644
  			$(call cmd_gensymtypes_c,$(KBUILD_SYMTYPES),$(@:.o=.symtypes)) \
  			    > $(@D)/$(@F).symversions;				\
  		fi;								\
-@@ -556,7 +556,7 @@ cmd_export_list = 					\
+@@ -559,7 +559,7 @@ cmd_export_list = 					\
  				$(filter_export_list) 	\
  				>>$(ksyms-lds);		\
  		else					\
@@ -4048,13 +3995,13 @@ index 96cc63281688..b62062095e4d 100644
  				>>$(ksyms-lds);		\
  		fi; 					\
 -- 
-2.29.0
+2.25.1
 
 
-From ade3f1f1d112ce9981fb612c1a5ddfdbe46e78e3 Mon Sep 17 00:00:00 2001
+From db2cc4a2c3ee16b81030ed58e77482265f8ebc06 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Fri, 8 Dec 2017 15:49:24 -0800
-Subject: [PATCH 40/50] ANDROID: init: ensure initcall ordering with LTO
+Subject: [PATCH 39/47] ANDROID: init: ensure initcall ordering with LTO
 
 With LTO, the compiler doesn't necessarily obey link order for
 initcalls, and the initcall variable needs to be globally unique
@@ -4460,13 +4407,13 @@ index db1ed351180f..856bed265cbd 100755
  	rm -f built-in.o
  	rm -f System.map
 -- 
-2.29.0
+2.25.1
 
 
-From bde77910878940f73887d99236d6776ad76ca1a9 Mon Sep 17 00:00:00 2001
+From 701ca54a50de46415eb4ebf563b980b616c7ca0e Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 3 Dec 2019 15:56:24 -0800
-Subject: [PATCH 41/50] ANDROID: kbuild: merge module sections with LTO
+Subject: [PATCH 40/47] ANDROID: kbuild: merge module sections with LTO
 
 LLD always splits sections with LTO, which increases module sizes. This
 change adds a linker script that merges the split sections in the final
@@ -4483,10 +4430,10 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  create mode 100644 scripts/module-lto.lds
 
 diff --git a/Makefile b/Makefile
-index 604839d04044..0e263ba933be 100644
+index 084d14fdc155..7c921d2b7b6f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -853,6 +853,8 @@ lto-clang-flags	:= -flto
+@@ -872,6 +872,8 @@ lto-clang-flags	:= -flto
  endif
  lto-clang-flags += -fvisibility=default $(call cc-option, -fsplit-lto-unit)
  
@@ -4524,13 +4471,13 @@ index 000000000000..f5ee544a877d
 +	.text : { *(.text .text[.0-9a-zA-Z_]*) }
 +}
 -- 
-2.29.0
+2.25.1
 
 
-From c935f578a9279845280123d41b8785173cc75821 Mon Sep 17 00:00:00 2001
+From a89463accaa74443a47eb271f816c12336729703 Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Wed, 4 Dec 2019 15:57:39 -0800
-Subject: [PATCH 42/50] ANDROID: kbuild: limit LTO inlining
+Subject: [PATCH 41/47] ANDROID: kbuild: limit LTO inlining
 
 This change limits function inlining across translation unit
 boundaries in order to reduce the binary size with LTO.
@@ -4549,10 +4496,10 @@ Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
  1 file changed, 6 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 0e263ba933be..06b02f721f8d 100644
+index 7c921d2b7b6f..c87a3358f798 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -853,6 +853,12 @@ lto-clang-flags	:= -flto
+@@ -872,6 +872,12 @@ lto-clang-flags	:= -flto
  endif
  lto-clang-flags += -fvisibility=default $(call cc-option, -fsplit-lto-unit)
  
@@ -4566,13 +4513,13 @@ index 0e263ba933be..06b02f721f8d 100644
  
  # allow disabling only clang LTO where needed
 -- 
-2.29.0
+2.25.1
 
 
-From 95f56915229e9a5339c2d724c889bffdcb1bb5d4 Mon Sep 17 00:00:00 2001
+From bcc7c52e944a15579be3b09a89534062aa85658a Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 6 Aug 2019 10:38:30 -0700
-Subject: [PATCH 43/50] ANDROID: arm64: allow ThinLTO to be selected
+Subject: [PATCH 42/47] ANDROID: arm64: allow ThinLTO to be selected
 
 Bug: 145210207
 Change-Id: I1284cc32f70c2332ef9908e7b070c69476b1e5d0
@@ -4594,13 +4541,13 @@ index 69eb6bb6ecea..6ad383e1f8c1 100644
  	select ARCH_WANT_OPTIONAL_GPIOLIB
  	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
 -- 
-2.29.0
+2.25.1
 
 
-From cb78c03d1f8a9c68a56b089b90474152e4d6bfee Mon Sep 17 00:00:00 2001
+From 1c9544ffac2bc107316fcdf6c20d2d6c2d74b48d Mon Sep 17 00:00:00 2001
 From: Hsiu-Chang Chen <hsiuchangchen@google.com>
 Date: Fri, 26 Jul 2019 12:47:52 +0800
-Subject: [PATCH 44/50] Fix build break for Argument list too long
+Subject: [PATCH 43/47] Fix build break for Argument list too long
 
 Reduce the number of files listed in the for loop statement
 in function update_lto_symversions to prevent error "Argument
@@ -4615,10 +4562,10 @@ Signed-off-by: Hsiu-Chang Chen <hsiuchangchen@google.com>
  1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index b62062095e4d..e5cb0145e50b 100644
+index 0231390be4ba..ca6b2a70fab9 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -457,11 +457,10 @@ ifdef CONFIG_LTO_CLANG
+@@ -460,11 +460,10 @@ ifdef CONFIG_LTO_CLANG
      # combine symversions for later processing
      update_lto_symversions =				\
  	rm -f $@.symversions; 				\
@@ -4635,13 +4582,13 @@ index b62062095e4d..e5cb0145e50b 100644
    endif
    # rebuild the symbol table with llvm-ar to include IR files
 -- 
-2.29.0
+2.25.1
 
 
-From b0a8e9113d3d722d330b84b6ede3d1132f31d66b Mon Sep 17 00:00:00 2001
+From 34e5101fad5bdc785fdaefad28fa4c7439a82661 Mon Sep 17 00:00:00 2001
 From: Shashank Baghel <theradcolor@gmail.com>
 Date: Mon, 23 Nov 2020 21:09:28 +0530
-Subject: [PATCH 45/50] configs: Enable Clang LTO
+Subject: [PATCH 44/47] configs: Enable Clang LTO
 
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
@@ -4650,14 +4597,14 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  2 files changed, 8 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 7cad7d21d187..1f8f26334f66 100644
+index c4235b7b5f00..29d56d9478d3 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
 @@ -48,6 +48,10 @@ CONFIG_EMBEDDED=y
  # CONFIG_COMPAT_BRK is not set
  CONFIG_PROFILING=y
  CONFIG_JUMP_LABEL=y
-+# CONFIG_LLVM_POLLY is not set
++CONFIG_LLVM_POLLY=y
 +# CONFIG_THINLTO is not set
 +CONFIG_LTO_CLANG=y
 +# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
@@ -4665,14 +4612,14 @@ index 7cad7d21d187..1f8f26334f66 100644
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index 88e0ac6557c1..ab8d7cac069b 100644
+index 67312d84ac03..64ba2eda46ef 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
 @@ -48,6 +48,10 @@ CONFIG_EMBEDDED=y
  # CONFIG_COMPAT_BRK is not set
  CONFIG_PROFILING=y
  CONFIG_JUMP_LABEL=y
-+# CONFIG_LLVM_POLLY is not set
++CONFIG_LLVM_POLLY=y
 +# CONFIG_THINLTO is not set
 +CONFIG_LTO_CLANG=y
 +# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
@@ -4680,13 +4627,13 @@ index 88e0ac6557c1..ab8d7cac069b 100644
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 -- 
-2.29.0
+2.25.1
 
 
-From a1ce6818a8c655e5e173eaade7225665a31d1da1 Mon Sep 17 00:00:00 2001
+From 7330de9c6e23abfa5cd30ee7974e8ab6030461fc Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Tue, 6 Aug 2019 03:06:40 +0000
-Subject: [PATCH 46/50] Makefile: Use O3 optimization level for Clang LTO
+Subject: [PATCH 45/47] Makefile: Use O3 optimization level for Clang LTO
 
 Signed-off-by: Danny Lin <danny@kdrag0n.dev>
 ---
@@ -4694,10 +4641,10 @@ Signed-off-by: Danny Lin <danny@kdrag0n.dev>
  1 file changed, 2 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 06b02f721f8d..1aa8cffd792d 100644
+index c87a3358f798..42eb1e5eb0c9 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -651,6 +651,8 @@ endif
+@@ -663,6 +663,8 @@ endif
  LLVM_AR		:= llvm-ar
  LLVM_NM		:= llvm-nm
  export LLVM_AR LLVM_NM
@@ -4707,13 +4654,13 @@ index 06b02f721f8d..1aa8cffd792d 100644
  
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
 -- 
-2.29.0
+2.25.1
 
 
-From a15963b83b1b13c70ed5e5c76c4dd10fde5b2e51 Mon Sep 17 00:00:00 2001
+From 427a98da31b3d0a89b58cc2b6194954670a3fd6f Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 19 Dec 2017 08:55:23 -0800
-Subject: [PATCH 47/50] arm64: vdso: disable LTO
+Subject: [PATCH 46/47] arm64: vdso: disable LTO
 
 Due to a bug in clang, vdso fails to build when both LTO_CLANG and
 CC_OPTIMIZE_FOR_SIZE are enabled:
@@ -4743,13 +4690,13 @@ index 6c69d5db9f36..3f22494eabdd 100644
  # Force -O2 to avoid libgcc dependencies
  CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
 -- 
-2.29.0
+2.25.1
 
 
-From 04f644bd9637f9c42e3e6bbebaff85f0c5b1e35b Mon Sep 17 00:00:00 2001
+From 4548a98a5a5f88ea2ec6981f7fa717d82467af48 Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Fri, 3 Apr 2020 11:50:04 -0700
-Subject: [PATCH 48/50] vmlinux.lds.h: Coalesce LLVM dead code elimination
+Subject: [PATCH 47/47] vmlinux.lds.h: Coalesce LLVM dead code elimination
  sections
 
 A recent LLVM commit [1] made LLD stop coalescing these temporary
@@ -4774,7 +4721,7 @@ Signed-off-by: Danny Lin <danny@kdrag0n.dev>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 9b30a7c2753f..e2cea5b87a6a 100644
+index 1da732b233ea..41a33292f1ba 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -67,8 +67,8 @@
@@ -4789,5 +4736,5 @@ index 9b30a7c2753f..e2cea5b87a6a 100644
  #define TEXT_MAIN .text
  #define DATA_MAIN .data
 -- 
-2.29.0
+2.25.1
 

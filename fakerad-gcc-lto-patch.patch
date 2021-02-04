@@ -1,25 +1,2522 @@
-From 8fa42e488c154c57f15712717db230dd4635148f Mon Sep 17 00:00:00 2001
+From 6bda494a533d31f662727357ce7541f728e3f6ba Mon Sep 17 00:00:00 2001
 From: Shashank Baghel <theradcolor@gmail.com>
-Date: Fri, 4 Dec 2020 17:46:00 +0530
-Subject: [PATCH] fakerad: defconfig: Enable GCC LTO
+Date: Thu, 1 Oct 2020 11:00:30 +0530
+Subject: [PATCH 01/32] Makefile: Parse CPU varient to KBUILD flags for GCC
 
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
- arch/arm64/configs/fakerad_defconfig | 1 +
+ Makefile | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index db2cd40bb6f5..16404e42a959 100644
+--- a/Makefile
++++ b/Makefile
+@@ -674,7 +674,14 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
+ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ KBUILD_CFLAGS	+= -Os
+ else
++ifeq ($(cc-name),gcc)
+ KBUILD_CFLAGS	+= -O3
++KBUILD_CFLAGS	+= -mcpu=cortex-a73.cortex-a53
++KBUILD_AFLAGS	+= -mcpu=cortex-a73.cortex-a53
++ifeq ($(cc-name),clang)
++KBUILD_CFLAGS   += -O3
++endif
++endif
+ endif
+ 
+ ifdef CONFIG_CC_WERROR
+-- 
+2.25.1
+
+
+From 83b628d3fa3fafa5b9c056434b101144ada97150 Mon Sep 17 00:00:00 2001
+From: Subhajeet Muhuri <subhajeet.muhuri@gmail.com>
+Date: Wed, 8 Apr 2020 16:37:05 +0530
+Subject: [PATCH 02/32] Makefile: SDM660 Clang optimisation setup
+
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 16404e42a959..2fa337e91932 100644
+--- a/Makefile
++++ b/Makefile
+@@ -680,6 +680,8 @@ KBUILD_CFLAGS	+= -mcpu=cortex-a73.cortex-a53
+ KBUILD_AFLAGS	+= -mcpu=cortex-a73.cortex-a53
+ ifeq ($(cc-name),clang)
+ KBUILD_CFLAGS   += -O3
++KBUILD_CFLAGS	+= -mcpu=cortex-a53 -mtune=cortex-a53
++KBUILD_AFLAGS	+= -mcpu=cortex-a53 -mtune=cortex-a53
+ endif
+ endif
+ endif
+-- 
+2.25.1
+
+
+From b6feed2a298b99ed20cc8f683ade16febe0a7bf2 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Sun, 8 Mar 2020 00:31:35 -0800
+Subject: [PATCH 03/32] kbuild: Disable stack conservation for GCC
+
+There's plenty of room on the stack for a few more inlined bytes here
+and there. The measured stack usage at runtime is still safe without
+this, and performance is surely improved at a microscopic level, so
+remove it.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ Makefile | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 2fa337e91932..834a3051167d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -883,9 +883,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
+ # Make sure -fstack-check isn't enabled (like gentoo apparently did)
+ KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check,)
+ 
+-# conserve stack if available
+-KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
+-
+ # disallow errors like 'EXPORT_GPL(foo);' with missing header
+ KBUILD_CFLAGS   += $(call cc-option,-Werror=implicit-int)
+ 
+-- 
+2.25.1
+
+
+From 1bc8f4c4bed388ef23a6d0f1b5fe429c2fdab5be Mon Sep 17 00:00:00 2001
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 24 Apr 2019 09:55:37 -0700
+Subject: [PATCH 04/32] arm64: sysreg: Make mrs_s and msr_s macros work with
+ Clang and LTO
+
+Clang's integrated assembler does not allow assembly macros defined
+in one inline asm block using the .macro directive to be used across
+separate asm blocks. LLVM developers consider this a feature and not a
+bug, recommending code refactoring:
+
+  https://bugs.llvm.org/show_bug.cgi?id=19749
+
+As binutils doesn't allow macros to be redefined, this change uses
+UNDEFINE_MRS_S and UNDEFINE_MSR_S to define corresponding macros
+in-place and workaround gcc and clang limitations on redefining macros
+across different assembler blocks.
+
+Specifically, the current state after preprocessing looks like this:
+
+asm volatile(".macro mXX_s ... .endm");
+void f()
+{
+	asm volatile("mXX_s a, b");
+}
+
+With GCC, it gives macro redefinition error because sysreg.h is included
+in multiple source files, and assembler code for all of them is later
+combined for LTO (I've seen an intermediate file with hundreds of
+identical definitions).
+
+With clang, it gives macro undefined error because clang doesn't allow
+sharing macros between inline asm statements.
+
+I also seem to remember catching another sort of undefined error with
+GCC due to reordering of macro definition asm statement and generated
+asm code for function that uses the macro.
+
+The solution with defining and undefining for each use, while certainly
+not elegant, satisfies both GCC and clang, LTO and non-LTO.
+
+Co-developed-by: Alex Matveev <alxmtvv@gmail.com>
+Co-developed-by: Yury Norov <ynorov@caviumnetworks.com>
+Co-developed-by: Sami Tolvanen <samitolvanen@google.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Reviewed-by: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+---
+ arch/arm64/include/asm/arch_gicv3.h | 47 +++++++++++++++++++++++------
+ arch/arm64/include/asm/cputype.h    |  5 ++-
+ arch/arm64/include/asm/sysreg.h     | 41 +++++++++++++++++--------
+ arch/arm64/kvm/hyp/vgic-v3-sr.c     | 10 ++++--
+ 4 files changed, 78 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm64/include/asm/arch_gicv3.h b/arch/arm64/include/asm/arch_gicv3.h
+index 30cf6f5961ef..d7087e953e8d 100644
+--- a/arch/arm64/include/asm/arch_gicv3.h
++++ b/arch/arm64/include/asm/arch_gicv3.h
+@@ -88,13 +88,19 @@
+ 
+ static inline void gic_write_eoir(u32 irq)
+ {
+-	asm volatile("msr_s " __stringify(ICC_EOIR1_EL1) ", %0" : : "r" ((u64)irq));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_EOIR1_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)irq));
+ 	isb();
+ }
+ 
+ static inline void gic_write_dir(u32 irq)
+ {
+-	asm volatile("msr_s " __stringify(ICC_DIR_EL1) ", %0" : : "r" ((u64)irq));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_DIR_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)irq));
+ 	isb();
+ }
+ 
+@@ -102,7 +108,10 @@ static inline u64 gic_read_iar_common(void)
+ {
+ 	u64 irqstat;
+ 
+-	asm volatile("mrs_s %0, " __stringify(ICC_IAR1_EL1) : "=r" (irqstat));
++	asm volatile(DEFINE_MRS_S
++		"mrs_s %0, " __stringify(ICC_IAR1_EL1) "\n"
++		UNDEFINE_MRS_S
++		: "=r" (irqstat));
+ 	/* As per the architecture specification */
+ 	mb();
+ 	return irqstat;
+@@ -122,7 +131,9 @@ static inline u64 gic_read_iar_cavium_thunderx(void)
+ 	asm volatile(
+ 		"nop;nop;nop;nop\n\t"
+ 		"nop;nop;nop;nop\n\t"
++		DEFINE_MRS_S
+ 		"mrs_s %0, " __stringify(ICC_IAR1_EL1) "\n\t"
++		UNDEFINE_MRS_S
+ 		"nop;nop;nop;nop"
+ 		: "=r" (irqstat));
+ 	mb();
+@@ -132,7 +143,10 @@ static inline u64 gic_read_iar_cavium_thunderx(void)
+ 
+ static inline void gic_write_pmr(u32 val)
+ {
+-	asm volatile("msr_s " __stringify(ICC_PMR_EL1) ", %0" : : "r" ((u64)val));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_PMR_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)val));
+ 	/* As per the architecture specification */
+ 	isb();
+ 	mb();
+@@ -140,19 +154,28 @@ static inline void gic_write_pmr(u32 val)
+ 
+ static inline void gic_write_ctlr(u32 val)
+ {
+-	asm volatile("msr_s " __stringify(ICC_CTLR_EL1) ", %0" : : "r" ((u64)val));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_CTLR_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)val));
+ 	isb();
+ }
+ 
+ static inline void gic_write_grpen1(u32 val)
+ {
+-	asm volatile("msr_s " __stringify(ICC_GRPEN1_EL1) ", %0" : : "r" ((u64)val));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_GRPEN1_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)val));
+ 	isb();
+ }
+ 
+ static inline void gic_write_sgi1r(u64 val)
+ {
+-	asm volatile("msr_s " __stringify(ICC_SGI1R_EL1) ", %0" : : "r" (val));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_SGI1R_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" (val));
+ 	/* As per the architecture specification */
+ 	isb();
+ 	mb();
+@@ -162,13 +185,19 @@ static inline u32 gic_read_sre(void)
+ {
+ 	u64 val;
+ 
+-	asm volatile("mrs_s %0, " __stringify(ICC_SRE_EL1) : "=r" (val));
++	asm volatile(DEFINE_MRS_S
++		"mrs_s %0, " __stringify(ICC_SRE_EL1) "\n"
++		UNDEFINE_MRS_S
++		: "=r" (val));
+ 	return val;
+ }
+ 
+ static inline void gic_write_sre(u32 val)
+ {
+-	asm volatile("msr_s " __stringify(ICC_SRE_EL1) ", %0" : : "r" ((u64)val));
++	asm volatile(DEFINE_MSR_S
++		"msr_s " __stringify(ICC_SRE_EL1) ", %0\n"
++		UNDEFINE_MSR_S
++		: : "r" ((u64)val));
+ 	isb();
+ }
+ 
+diff --git a/arch/arm64/include/asm/cputype.h b/arch/arm64/include/asm/cputype.h
+index f857adc51b0f..dfd17691cb4a 100644
+--- a/arch/arm64/include/asm/cputype.h
++++ b/arch/arm64/include/asm/cputype.h
+@@ -119,7 +119,10 @@
+ 
+ #define read_cpuid(reg) ({						\
+ 	u64 __val;							\
+-	asm("mrs_s	%0, " __stringify(reg) : "=r" (__val));		\
++	asm(DEFINE_MRS_S						\
++		"mrs_s	%0, " __stringify(reg) "\n"			\
++		UNDEFINE_MRS_S						\
++		: "=r" (__val));					\
+ 	__val;								\
+ })
+ 
+diff --git a/arch/arm64/include/asm/sysreg.h b/arch/arm64/include/asm/sysreg.h
+index c768daa084ca..dbc1c219add2 100644
+--- a/arch/arm64/include/asm/sysreg.h
++++ b/arch/arm64/include/asm/sysreg.h
+@@ -232,29 +232,44 @@
+ 
+ #include <linux/types.h>
+ 
+-asm(
+-"	.irp	num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30\n"
+-"	.equ	.L__reg_num_x\\num, \\num\n"
+-"	.endr\n"
++#define __DEFINE_MRS_MSR_S_REGNUM				\
++"	.irp	num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30\n" \
++"	.equ	.L__reg_num_x\\num, \\num\n"			\
++"	.endr\n"						\
+ "	.equ	.L__reg_num_xzr, 31\n"
+-"\n"
+-"	.macro	mrs_s, rt, sreg\n"
+-"	.inst	0xd5200000|(\\sreg)|(.L__reg_num_\\rt)\n"
++
++#define DEFINE_MRS_S						\
++	__DEFINE_MRS_MSR_S_REGNUM				\
++"	.macro	mrs_s, rt, sreg\n"				\
++"	.inst 0xd5200000|(\\sreg)|(.L__reg_num_\\rt)\n"	\
+ "	.endm\n"
+-"\n"
+-"	.macro	msr_s, sreg, rt\n"
+-"	.inst	0xd5000000|(\\sreg)|(.L__reg_num_\\rt)\n"
++
++#define DEFINE_MSR_S						\
++	__DEFINE_MRS_MSR_S_REGNUM				\
++"	.macro	msr_s, sreg, rt\n"				\
++"	.inst 0xd5000000|(\\sreg)|(.L__reg_num_\\rt)\n"		\
+ "	.endm\n"
+-);
++
++#define UNDEFINE_MRS_S						\
++"	.purgem	mrs_s\n"
++
++#define UNDEFINE_MSR_S						\
++"	.purgem	msr_s\n"
+ 
+ static inline void config_sctlr_el1(u32 clear, u32 set)
+ {
+ 	u32 val;
+ 
+-	asm volatile("mrs %0, sctlr_el1" : "=r" (val));
++	asm volatile(DEFINE_MRS_S
++		"mrs %0, sctlr_el1\n"
++		UNDEFINE_MRS_S
++		: "=r" (val));
+ 	val &= ~clear;
+ 	val |= set;
+-	asm volatile("msr sctlr_el1, %0" : : "r" (val));
++	asm volatile(DEFINE_MSR_S
++		"msr sctlr_el1, %0\n"
++		UNDEFINE_MSR_S
++		: : "r" (val));
+ }
+ 
+ /*
+diff --git a/arch/arm64/kvm/hyp/vgic-v3-sr.c b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+index 9142e082f5f3..c2986a0ffed0 100644
+--- a/arch/arm64/kvm/hyp/vgic-v3-sr.c
++++ b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+@@ -29,14 +29,20 @@
+ #define read_gicreg(r)							\
+ 	({								\
+ 		u64 reg;						\
+-		asm volatile("mrs_s %0, " __stringify(r) : "=r" (reg));	\
++		asm volatile(DEFINE_MRS_S				\
++			"mrs_s %0, " __stringify(r) "\n"		\
++			UNDEFINE_MRS_S					\
++			: "=r" (reg));					\
+ 		reg;							\
+ 	})
+ 
+ #define write_gicreg(v,r)						\
+ 	do {								\
+ 		u64 __val = (v);					\
+-		asm volatile("msr_s " __stringify(r) ", %0" : : "r" (__val));\
++		asm volatile(DEFINE_MSR_S				\
++			"msr_s " __stringify(r) ", %0\n"		\
++			UNDEFINE_MSR_S					\
++			: : "r" (__val));				\
+ 	} while (0)
+ 
+ /* vcpu is already in the HYP VA space */
+-- 
+2.25.1
+
+
+From 93b966f6b62cdb909d83132a04c90b3bd0cdd30f Mon Sep 17 00:00:00 2001
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 24 Aug 2016 22:29:19 +1000
+Subject: [PATCH 05/32] kbuild: allow architectures to use thin archives
+ instead of ld -r
+
+ld -r is an incremental link used to create built-in.o files in build
+subdirectories. It produces relocatable object files containing all
+its input files, and these are are then pulled together and relocated
+in the final link. Aside from the bloat, this constrains the final
+link relocations, which has bitten large powerpc builds with
+unresolvable relocations in the final link.
+
+Alan Modra has recommended the kernel use thin archives for linking.
+This is an alternative and means that the linker has more information
+available to it when it links the kernel.
+
+This patch enables a config option architectures can select, which
+causes all built-in.o files to be built as thin archives. built-in.o
+files in subdirectories do not get symbol table or index attached,
+which improves speed and size. The final link pass creates a
+built-in.o archive in the root output directory which includes the
+symbol table and index. The linker then uses takes this file to link.
+
+The --whole-archive linker option is required, because the linker now
+has visibility to every individual object file, and it will otherwise
+just completely avoid including those without external references
+(consider a file with EXPORT_SYMBOL or initcall or hardware exceptions
+as its only entry points). The traditional built works "by luck" as
+built-in.o files are large enough that they're going to get external
+references. However this optimisation is unpredictable for the kernel
+(due to above external references), ineffective at culling unused, and
+costly because the .o files have to be searched for references.
+Superior alternatives for link-time culling should be used instead.
+
+Build characteristics for inclink vs thinarc, on a small powerpc64le
+pseries VM with a modest .config:
+
+                                  inclink       thinarc
+sizes
+vmlinux                        15 618 680    15 625 028
+sum of all built-in.o          56 091 808     1 054 334
+sum excluding root built-in.o                   151 430
+
+find -name built-in.o | xargs rm ; time make vmlinux
+real                              22.772s       21.143s
+user                              13.280s       13.430s
+sys                                4.310s        2.750s
+
+- Final kernel pulled in only about 6K more, which shows how
+  ineffective the object file culling is.
+- Build performance looks improved due to less pagecache activity.
+  On IO constrained systems it could be a bigger win.
+- Build size saving is significant.
+
+Side note, the toochain understands archives, so there's some tricks,
+$ ar t built-in.o          # list all files you linked with
+$ size built-in.o          # and their sizes
+$ objdump -d built-in.o    # disassembly (unrelocated) with filenames
+
+Implementation by sfr, minor tweaks by npiggin.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michal Marek <mmarek@suse.com>
+---
+ arch/Kconfig            |  6 ++++
+ scripts/Makefile.build  | 23 ++++++++++---
+ scripts/link-vmlinux.sh | 71 ++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 85 insertions(+), 15 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 86b2bfc3034f..f545fa15ed5b 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -440,6 +440,12 @@ config HAVE_ARCH_WITHIN_STACK_FRAMES
+ 	  and similar) by implementing an inline arch_within_stack_frames(),
+ 	  which is used by CONFIG_HARDENED_USERCOPY.
+ 
++config THIN_ARCHIVES
++	bool
++	help
++	  Select this if the architecture wants to use thin archives
++	  instead of ld -r to create the built-in.o files.
++
+ config HAVE_CONTEXT_TRACKING
+ 	bool
+ 	help
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 726d1b3f6759..e92e55e60d16 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -415,12 +415,22 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+ # Rule to compile a set of .o files into one .o file
+ #
+ ifdef builtin-target
+-quiet_cmd_link_o_target = LD      $@
++
++ifdef CONFIG_THIN_ARCHIVES
++  cmd_make_builtin = rm -f $@; $(AR) rcST$(KBUILD_ARFLAGS)
++  cmd_make_empty_builtin = rm -f $@; $(AR) rcST$(KBUILD_ARFLAGS)
++  quiet_cmd_link_o_target = AR      $@
++else
++  cmd_make_builtin = $(LD) $(ld_flags) -r -o
++  cmd_make_empty_builtin = rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS)
++  quiet_cmd_link_o_target = LD      $@
++endif
++
+ # If the list of objects to link is empty, just create an empty built-in.o
+ cmd_link_o_target = $(if $(strip $(obj-y)),\
+-		      $(LD) $(ld_flags) -r -o $@ $(filter $(obj-y), $^) \
++		      $(cmd_make_builtin) $@ $(filter $(obj-y), $^) \
+ 		      $(cmd_secanalysis),\
+-		      rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@)
++		      $(cmd_make_empty_builtin) $@)
+ 
+ $(builtin-target): $(obj-y) FORCE
+ 	$(call if_changed,link_o_target)
+@@ -446,7 +456,12 @@ $(modorder-target): $(subdir-ym) FORCE
+ #
+ ifdef lib-target
+ quiet_cmd_link_l_target = AR      $@
+-cmd_link_l_target = rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@ $(lib-y)
++
++ifdef CONFIG_THIN_ARCHIVES
++  cmd_link_l_target = rm -f $@; $(AR) rcsT$(KBUILD_ARFLAGS) $@ $(lib-y)
++else
++  cmd_link_l_target = rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@ $(lib-y)
++endif
+ 
+ $(lib-target): $(lib-y) FORCE
+ 	$(call if_changed,link_l_target)
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index ba6c34ea5429..270b663721a0 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -37,12 +37,40 @@ info()
+ 	fi
+ }
+ 
++# Thin archive build here makes a final archive with
++# symbol table and indexes from vmlinux objects, which can be
++# used as input to linker.
++#
++# Traditional incremental style of link does not require this step
++#
++# built-in.o output file
++#
++archive_builtin()
++{
++	if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
++		info AR built-in.o
++		rm -f built-in.o;
++		${AR} rcsT${KBUILD_ARFLAGS} built-in.o			\
++					${KBUILD_VMLINUX_INIT}		\
++					${KBUILD_VMLINUX_MAIN}
++	fi
++}
++
+ # Link of vmlinux.o used for section mismatch analysis
+ # ${1} output file
+ modpost_link()
+ {
+-	${LD} ${LDFLAGS} -r -o ${1} ${KBUILD_VMLINUX_INIT}                   \
+-		--start-group ${KBUILD_VMLINUX_MAIN} --end-group
++	local objects
++
++	if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
++		objects="--whole-archive built-in.o"
++	else
++		objects="${KBUILD_VMLINUX_INIT}				\
++			--start-group					\
++			${KBUILD_VMLINUX_MAIN}				\
++			--end-group"
++	fi
++	${LD} ${LDFLAGS} -r -o ${1} ${objects}
+ }
+ 
+ # Link of vmlinux
+@@ -51,18 +79,36 @@ modpost_link()
+ vmlinux_link()
+ {
+ 	local lds="${objtree}/${KBUILD_LDS}"
++	local objects
+ 
+ 	if [ "${SRCARCH}" != "um" ]; then
+-		${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2}                  \
+-			-T ${lds} ${KBUILD_VMLINUX_INIT}                     \
+-			--start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
++		if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
++			objects="--whole-archive built-in.o ${1}"
++		else
++			objects="${KBUILD_VMLINUX_INIT}			\
++				--start-group				\
++				${KBUILD_VMLINUX_MAIN}			\
++				--end-group				\
++				${1}"
++		fi
++
++		${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2}		\
++			-T ${lds} ${objects}
+ 	else
+-		${CC} ${CFLAGS_vmlinux} -o ${2}                              \
+-			-Wl,-T,${lds} ${KBUILD_VMLINUX_INIT}                 \
+-			-Wl,--start-group                                    \
+-				 ${KBUILD_VMLINUX_MAIN}                      \
+-			-Wl,--end-group                                      \
+-			-lutil -lrt -lpthread ${1}
++		if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
++			objects="-Wl,--whole-archive built-in.o ${1}"
++		else
++			objects="${KBUILD_VMLINUX_INIT}			\
++				-Wl,--start-group			\
++				${KBUILD_VMLINUX_MAIN}			\
++				-Wl,--end-group				\
++				${1}"
++		fi
++
++		${CC} ${CFLAGS_vmlinux} -o ${2}				\
++			-Wl,-T,${lds}					\
++			${objects}					\
++			-lutil -lrt -lpthread
+ 		rm -f linux
+ 	fi
+ }
+@@ -118,6 +164,7 @@ cleanup()
+ 	rm -f .tmp_kallsyms*
+ 	rm -f .tmp_version
+ 	rm -f .tmp_vmlinux*
++	rm -f built-in.o
+ 	rm -f System.map
+ 	rm -f vmlinux
+ 	rm -f vmlinux.o
+@@ -161,6 +208,8 @@ case "${KCONFIG_CONFIG}" in
+ 	. "./${KCONFIG_CONFIG}"
+ esac
+ 
++archive_builtin
++
+ #link vmlinux.o
+ info LD vmlinux.o
+ modpost_link vmlinux.o
+-- 
+2.25.1
+
+
+From ee777d7390dc184d5057b6fdf4e802ae3c9e41fa Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Thu, 24 Nov 2016 03:41:38 +1100
+Subject: [PATCH 06/32] kbuild: thin archives for multi-y targets
+
+THIN_ARCHIVES builds archives for built-in.o targets, have it build
+multi-y targets as archives as well.
+
+This saves another ~15% of the size of intermediate artifacts in the
+build tree. After this patch, the linker is only used in final link,
+and special cases like vdsos.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michal Marek <mmarek@suse.com>
+---
+ scripts/Makefile.build | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index e92e55e60d16..1870109b7f10 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -481,11 +481,18 @@ $(filter $(addprefix $(obj)/,         \
+ $($(subst $(obj)/,,$(@:.o=-objs)))    \
+ $($(subst $(obj)/,,$(@:.o=-y)))), $^)
+ 
+-quiet_cmd_link_multi-y = LD      $@
+-cmd_link_multi-y = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secanalysis)
++cmd_link_multi-link = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secanalysis)
++
++ifdef CONFIG_THIN_ARCHIVES
++  quiet_cmd_link_multi-y = AR      $@
++  cmd_link_multi-y = rm -f $@; $(AR) rcST$(KBUILD_ARFLAGS) $@ $(link_multi_deps)
++else
++  quiet_cmd_link_multi-y = LD      $@
++  cmd_link_multi-y = $(cmd_link_multi-link)
++endif
+ 
+ quiet_cmd_link_multi-m = LD [M]  $@
+-cmd_link_multi-m = $(cmd_link_multi-y)
++cmd_link_multi-m = $(cmd_link_multi-link)
+ 
+ $(multi-used-y): FORCE
+ 	$(call if_changed,link_multi-y)
+-- 
+2.25.1
+
+
+From e2f739ead3dec3f0712b575a35d1be7c1ab677b3 Mon Sep 17 00:00:00 2001
+From: Andi Kleen <ak@linux.intel.com>
+Date: Tue, 31 Mar 2015 03:45:39 -0700
+Subject: [PATCH 07/32] lto: Add __noreorder and mark initcalls __noreorder
+
+gcc 5 has a new no_reorder attribute that prevents top level
+reordering only for that symbol.
+
+Kernels don't like any reordering of initcalls between files, as several
+initcalls depend on each other. LTO previously needed to use
+-fno-toplevel-reordering to prevent boot failures.
+
+Add a __noreorder wrapper for the no_reorder attribute and use
+it for initcalls.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+---
+ include/linux/compiler-gcc.h | 5 +++++
+ include/linux/compiler.h     | 3 +++
+ include/linux/init.h         | 2 +-
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 9485abe76b68..855be7832c55 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -316,6 +316,11 @@
+ #define __no_sanitize_address
+ #endif
+ 
++#if __GNUC__ >= 5
++/* Avoid reordering a top level statement */
++#define __noreorder    __attribute__((no_reorder))
++#endif
++
+ /*
+  * A trick to suppress uninitialized variable warning without generating any
+  * code
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 7cabe0cc8665..96df6b7d83bc 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -451,6 +451,9 @@ unsigned long read_word_at_a_time(const void *addr)
+ #define __assume_aligned(a, ...)
+ #endif
+ 
++#ifndef __noreorder
++#define __noreorder
++#endif
+ 
+ /* Are two types/vars the same type (ignoring qualifiers)? */
+ #ifndef __same_type
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 3561ea30ed8c..aad14524f7db 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -191,7 +191,7 @@ extern bool initcall_debug;
+  */
+ 
+ #define __define_initcall(fn, id) \
+-	static initcall_t __initcall_##fn##id __used \
++	static initcall_t __initcall_##fn##id __used __noreorder \
+ 	__attribute__((__section__(".initcall" #id ".init"))) = fn; \
+ 	LTO_REFERENCE_INITCALL(__initcall_##fn##id)
+ 
+-- 
+2.25.1
+
+
+From 59fea4ce243097fa7ca54d97394fd42410eb9c54 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Tue, 10 Mar 2020 21:13:43 -0700
+Subject: [PATCH 08/32] sys_ni: Remove duplicate cond_syscall(sys_madvise)
+ entry
+
+This is already defined. Remove the duplicate from the less-correct
+location.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ kernel/sys_ni.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 0623787ec67a..e983a8b2ee60 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -159,7 +159,6 @@ cond_syscall(compat_sys_process_vm_writev);
+ cond_syscall(sys_uselib);
+ cond_syscall(sys_fadvise64);
+ cond_syscall(sys_fadvise64_64);
+-cond_syscall(sys_madvise);
+ cond_syscall(sys_setuid);
+ cond_syscall(sys_setregid);
+ cond_syscall(sys_setgid);
+-- 
+2.25.1
+
+
+From 62fcd156f13019dd02352616b7d72effc6132d82 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Tue, 10 Mar 2020 21:19:28 -0700
+Subject: [PATCH 09/32] sys_ni: Fix cond_syscall() alias for LTO
+
+When using LTO, the conditional syscall aliases aren't weak, and instead
+override implemented syscalls rather than serve as a fallback for
+missing syscalls. Fix the cond_syscall() alias using an attribute so
+that it gets properly evaluated at link time.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ include/linux/linkage.h | 6 ++----
+ kernel/Makefile         | 3 ---
+ 2 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index a6a42dd02466..7426dd5b1cac 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -22,10 +22,8 @@
+ #endif
+ 
+ #ifndef cond_syscall
+-#define cond_syscall(x)	asm(				\
+-	".weak " VMLINUX_SYMBOL_STR(x) "\n\t"		\
+-	".set  " VMLINUX_SYMBOL_STR(x) ","		\
+-		 VMLINUX_SYMBOL_STR(sys_ni_syscall))
++#define cond_syscall(x) \
++	long __attribute__((weak, alias("sys_ni_syscall"))) x(void);
+ #endif
+ 
+ #ifndef SYSCALL_ALIAS
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 981563e7a221..60f84b6af71e 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -30,9 +30,6 @@ KCOV_INSTRUMENT_extable.o := n
+ KCOV_INSTRUMENT_kcov.o := n
+ KASAN_SANITIZE_kcov.o := n
+ 
+-# cond_syscall is currently not LTO compatible
+-CFLAGS_sys_ni.o = $(DISABLE_LTO)
+-
+ obj-y += sched/
+ obj-y += locking/
+ obj-y += power/
+-- 
+2.25.1
+
+
+From e8ed5b508db56b7bf21a516d1b44c8785a03de1f Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 11 Mar 2020 09:25:22 -0700
+Subject: [PATCH 10/32] arm64: Make __stack_chk_guard visible
+
+When LTO is used, GCC optimizes out the __stack_chk_guard variable,
+resulting in undefined symbol errors. Fix it by explicitly making
+__stack_chk_guard visible so it doesn't disappear.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ arch/arm64/kernel/process.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+index 5dd9b572259f..0d9a952caeae 100644
+--- a/arch/arm64/kernel/process.c
++++ b/arch/arm64/kernel/process.c
+@@ -60,7 +60,7 @@
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ #include <linux/stackprotector.h>
+-unsigned long __stack_chk_guard __read_mostly;
++__visible unsigned long __stack_chk_guard __read_mostly;
+ EXPORT_SYMBOL(__stack_chk_guard);
+ #endif
+ 
+-- 
+2.25.1
+
+
+From 1cc4e10c324d3ed5e91551e57fc3001add9f0b8f Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 11 Mar 2020 09:29:21 -0700
+Subject: [PATCH 11/32] arm64: Fix section mismatch with LTO caused by
+ ambiguous const
+
+Due to how dt_supported_cpu_ops and acpi_supported_cpu_ops are used,
+they can be placed in a different section by the compiler when LTO is
+used because it thinks that it belongs in another section. To really
+make it clear to GCC that these belong in the __initconst section,
+make the variables themselves const and refactor cpu_get_ops()
+accordingly to make it compile.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ arch/arm64/kernel/cpu_ops.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm64/kernel/cpu_ops.c b/arch/arm64/kernel/cpu_ops.c
+index 6342f1c61a09..154746648cdd 100644
+--- a/arch/arm64/kernel/cpu_ops.c
++++ b/arch/arm64/kernel/cpu_ops.c
+@@ -30,13 +30,13 @@ extern const struct cpu_operations cpu_psci_ops;
+ 
+ const struct cpu_operations *cpu_ops[NR_CPUS];
+ 
+-static const struct cpu_operations *dt_supported_cpu_ops[] __initconst = {
++static const struct cpu_operations *const dt_supported_cpu_ops[] __initconst = {
+ 	&smp_spin_table_ops,
+ 	&cpu_psci_ops,
+ 	NULL,
+ };
+ 
+-static const struct cpu_operations *acpi_supported_cpu_ops[] __initconst = {
++static const struct cpu_operations *const acpi_supported_cpu_ops[] __initconst = {
+ #ifdef CONFIG_ARM64_ACPI_PARKING_PROTOCOL
+ 	&acpi_parking_protocol_ops,
+ #endif
+@@ -46,15 +46,18 @@ static const struct cpu_operations *acpi_supported_cpu_ops[] __initconst = {
+ 
+ static const struct cpu_operations * __init cpu_get_ops(const char *name)
+ {
+-	const struct cpu_operations **ops;
++	int i;
+ 
+-	ops = acpi_disabled ? dt_supported_cpu_ops : acpi_supported_cpu_ops;
+-
+-	while (*ops) {
+-		if (!strcmp(name, (*ops)->name))
+-			return *ops;
+-
+-		ops++;
++	if (acpi_disabled) {
++		for (i = 0; i < ARRAY_SIZE(dt_supported_cpu_ops); i++) {
++			if (!strcmp(name, dt_supported_cpu_ops[i]->name))
++				return dt_supported_cpu_ops[i];
++		}
++	} else {
++		for (i = 0; i < ARRAY_SIZE(acpi_supported_cpu_ops); i++) {
++			if (!strcmp(name, acpi_supported_cpu_ops[i]->name))
++				return acpi_supported_cpu_ops[i];
++		}
+ 	}
+ 
+ 	return NULL;
+-- 
+2.25.1
+
+
+From cfb885039e13ea3596fa01916cbcef1c614ee75f Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 11 Mar 2020 11:23:20 -0700
+Subject: [PATCH 12/32] mm: Move __free_pages_boot_core() from __init section
+ to fix mismatch
+
+__free_pages_boot_core() is used by functions that are not located in
+the __init section and may run after init, so __free_pages_boot_core()
+should be moved out from the __init section to fix the mismatch.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ mm/page_alloc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index a100af131b9a..1a585fe52be7 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1088,7 +1088,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 	local_irq_restore(flags);
+ }
+ 
+-static void __init __free_pages_boot_core(struct page *page, unsigned long pfn, unsigned int order)
++static void __free_pages_boot_core(struct page *page, unsigned long pfn, unsigned int order)
+ {
+ 	unsigned int nr_pages = 1 << order;
+ 	struct page *p = page;
+-- 
+2.25.1
+
+
+From 3d11c5c17df918b562f0f89ec9989e8275180e86 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Tue, 17 Mar 2020 20:14:51 -0700
+Subject: [PATCH 13/32] lto: Add Link Time Optimization support for GCC
+
+This requires a modern version of GCC and various other patches in order
+to work. LTO results in a smaller kernel binary with better performance.
+
+Based off of work from Andi Kleen <ak@linux.intel.com>.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ Makefile                | 15 +++++++++++++++
+ init/Kconfig            |  4 ++++
+ scripts/link-vmlinux.sh |  4 ++--
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 834a3051167d..a00c35b6b43b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -645,6 +645,21 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
+ KBUILD_AFLAGS	+= $(CLANG_FLAGS)
+ endif
+ 
++ifdef CONFIG_LTO
++LTO_CFLAGS    := -flto -flto=jobserver -fno-fat-lto-objects \
++                 -fuse-linker-plugin -fwhole-program
++KBUILD_CFLAGS += $(LTO_CFLAGS)
++LTO_LDFLAGS   := $(LTO_CFLAGS) -Wno-lto-type-mismatch -Wno-psabi
++LDFINAL       := $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
++AR            := $(CROSS_COMPILE)gcc-ar
++NM            := $(CROSS_COMPILE)gcc-nm
++DISABLE_LTO   := -fno-lto
++export DISABLE_LTO LDFINAL
++else
++LDFINAL       := $(LD)
++export LDFINAL
++endif
++
+ # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
+ # values of the respective KBUILD_* variables
+ ARCH_CPPFLAGS :=
+diff --git a/init/Kconfig b/init/Kconfig
+index 73b26c910f58..7c5cd41acbe1 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1511,6 +1511,10 @@ config CC_OPTIMIZE_FOR_SIZE
+ 
+ endchoice
+ 
++config LTO
++	bool "Enable Link Time Optimization"
++	select THIN_ARCHIVES
++
+ config SYSCTL
+ 	bool
+ 
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index 270b663721a0..5d00814568d5 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -70,7 +70,7 @@ modpost_link()
+ 			${KBUILD_VMLINUX_MAIN}				\
+ 			--end-group"
+ 	fi
+-	${LD} ${LDFLAGS} -r -o ${1} ${objects}
++	${LDFINAL} ${LDFLAGS} -r -o ${1} ${objects}
+ }
+ 
+ # Link of vmlinux
+@@ -92,7 +92,7 @@ vmlinux_link()
+ 				${1}"
+ 		fi
+ 
+-		${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2}		\
++		${LDFINAL} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2}	\
+ 			-T ${lds} ${objects}
+ 	else
+ 		if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
+-- 
+2.25.1
+
+
+From ed53e3dc41e33c058cf699de53271b3af51486ec Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 18 Mar 2020 21:54:15 -0700
+Subject: [PATCH 14/32] irqchip/gic-v3-its: Put its_init() in __init section
+
+This fixes a section mismatch since its_init() is only used from inside
+the __init section.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ drivers/irqchip/irq-gic-v3-its.c   | 4 ++--
+ include/linux/irqchip/arm-gic-v3.h | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
+index d4ae43f71e72..3d76d727660f 100644
+--- a/drivers/irqchip/irq-gic-v3-its.c
++++ b/drivers/irqchip/irq-gic-v3-its.c
+@@ -1635,8 +1635,8 @@ static struct of_device_id its_device_id[] = {
+ 	{},
+ };
+ 
+-int its_init(struct device_node *node, struct rdists *rdists,
+-	     struct irq_domain *parent_domain)
++int __init its_init(struct device_node *node, struct rdists *rdists,
++		    struct irq_domain *parent_domain)
+ {
+ 	struct device_node *np;
+ 
+diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
+index 54048f336a1f..fb8f1720fe91 100644
+--- a/include/linux/irqchip/arm-gic-v3.h
++++ b/include/linux/irqchip/arm-gic-v3.h
+@@ -332,8 +332,8 @@ struct rdists {
+ struct irq_domain;
+ struct device_node;
+ int its_cpu_init(void);
+-int its_init(struct device_node *node, struct rdists *rdists,
+-	     struct irq_domain *domain);
++int __init its_init(struct device_node *node, struct rdists *rdists,
++		    struct irq_domain *parent_domain);
+ 
+ static inline bool gic_enable_sre(void)
+ {
+-- 
+2.25.1
+
+
+From 8485862f0093ee86bf8557899fbe00e9ac99aa5c Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 24 Aug 2016 22:29:20 +1000
+Subject: [PATCH 15/32] kbuild: allow archs to select link dead code/data
+ elimination
+
+Introduce LD_DEAD_CODE_DATA_ELIMINATION option for architectures to
+select to build with -ffunction-sections, -fdata-sections, and link
+with --gc-sections. It requires some work (documented) to ensure all
+unreferenced entrypoints are live, and requires toolchain and build
+verification, so it is made a per-arch option for now.
+
+On a random powerpc64le build, this yelds a significant size saving,
+it boots and runs fine, but there is a lot I haven't tested as yet, so
+these savings may be reduced if there are bugs in the link.
+
+    text      data        bss        dec   filename
+11169741   1180744    1923176	14273661   vmlinux
+10445269   1004127    1919707	13369103   vmlinux.dce
+
+~700K text, ~170K data, 6% removed from kernel image size.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michal Marek <mmarek@suse.com>
+---
+ Makefile                          |  9 ++++++
+ arch/Kconfig                      | 13 ++++++++
+ include/asm-generic/vmlinux.lds.h | 50 +++++++++++++++++--------------
+ init/Makefile                     |  2 ++
+ 4 files changed, 52 insertions(+), 22 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index a00c35b6b43b..082d034dafb7 100644
+--- a/Makefile
++++ b/Makefile
+@@ -686,6 +686,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
+ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
+ 
++ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
++KBUILD_CFLAGS	+= $(call cc-option,-ffunction-sections,)
++KBUILD_CFLAGS	+= $(call cc-option,-fdata-sections,)
++endif
++
+ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ KBUILD_CFLAGS	+= -Os
+ else
+@@ -926,6 +931,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
+ KBUILD_LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
+ LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
+ 
++ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
++LDFLAGS_vmlinux	+= $(call ld-option, --gc-sections,)
++endif
++
+ ifeq ($(CONFIG_STRIP_ASM_SYMS),y)
+ LDFLAGS_vmlinux	+= $(call ld-option, -X,)
+ endif
+diff --git a/arch/Kconfig b/arch/Kconfig
+index f545fa15ed5b..b5cc909e09bf 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -446,6 +446,19 @@ config THIN_ARCHIVES
+ 	  Select this if the architecture wants to use thin archives
+ 	  instead of ld -r to create the built-in.o files.
+ 
++config LD_DEAD_CODE_DATA_ELIMINATION
++	bool
++	help
++	  Select this if the architecture wants to do dead code and
++	  data elimination with the linker by compiling with
++	  -ffunction-sections -fdata-sections and linking with
++	  --gc-sections.
++
++	  This requires that the arch annotates or otherwise protects
++	  its external entry points from being discarded. Linker scripts
++	  must also merge .text.*, .data.*, and .bss.* correctly into
++	  output sections.
++
+ config HAVE_CONTEXT_TRACKING
+ 	bool
+ 	help
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index d3d8ad3469c3..093c2dec66d7 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -196,9 +196,14 @@
+ 	*(.dtb.init.rodata)						\
+ 	VMLINUX_SYMBOL(__dtb_end) = .;
+ 
+-/* .data section */
++/*
++ * .data section
++ * -fdata-sections generates .data.identifier which needs to be pulled in
++ * with .data, but don't want to pull in .data..stuff which has its own
++ * requirements. Same for bss.
++ */
+ #define DATA_DATA							\
+-	*(.data)							\
++	*(.data .data.[0-9a-zA-Z_]*)					\
+ 	*(.ref.data)							\
+ 	*(.data..shared_aligned) /* percpu related */			\
+ 	MEM_KEEP(init.data)						\
+@@ -318,76 +323,76 @@
+ 	/* Kernel symbol table: Normal symbols */			\
+ 	__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start___ksymtab) = .;			\
+-		*(SORT(___ksymtab+*))					\
++		KEEP(*(SORT(___ksymtab+*)))				\
+ 		VMLINUX_SYMBOL(__stop___ksymtab) = .;			\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-only symbols */			\
+ 	__ksymtab_gpl     : AT(ADDR(__ksymtab_gpl) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start___ksymtab_gpl) = .;		\
+-		*(SORT(___ksymtab_gpl+*))				\
++		KEEP(*(SORT(___ksymtab_gpl+*)))				\
+ 		VMLINUX_SYMBOL(__stop___ksymtab_gpl) = .;		\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: Normal unused symbols */		\
+ 	__ksymtab_unused  : AT(ADDR(__ksymtab_unused) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start___ksymtab_unused) = .;		\
+-		*(SORT(___ksymtab_unused+*))				\
++		KEEP(*(SORT(___ksymtab_unused+*)))			\
+ 		VMLINUX_SYMBOL(__stop___ksymtab_unused) = .;		\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-only unused symbols */		\
+ 	__ksymtab_unused_gpl : AT(ADDR(__ksymtab_unused_gpl) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__start___ksymtab_unused_gpl) = .;	\
+-		*(SORT(___ksymtab_unused_gpl+*))			\
++		KEEP(*(SORT(___ksymtab_unused_gpl+*)))			\
+ 		VMLINUX_SYMBOL(__stop___ksymtab_unused_gpl) = .;	\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-future-only symbols */		\
+ 	__ksymtab_gpl_future : AT(ADDR(__ksymtab_gpl_future) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__start___ksymtab_gpl_future) = .;	\
+-		*(SORT(___ksymtab_gpl_future+*))			\
++		KEEP(*(SORT(___ksymtab_gpl_future+*)))			\
+ 		VMLINUX_SYMBOL(__stop___ksymtab_gpl_future) = .;	\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: Normal symbols */			\
+ 	__kcrctab         : AT(ADDR(__kcrctab) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start___kcrctab) = .;			\
+-		*(SORT(___kcrctab+*))					\
++		KEEP(*(SORT(___kcrctab+*)))				\
+ 		VMLINUX_SYMBOL(__stop___kcrctab) = .;			\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-only symbols */			\
+ 	__kcrctab_gpl     : AT(ADDR(__kcrctab_gpl) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start___kcrctab_gpl) = .;		\
+-		*(SORT(___kcrctab_gpl+*))				\
++		KEEP(*(SORT(___kcrctab_gpl+*)))				\
+ 		VMLINUX_SYMBOL(__stop___kcrctab_gpl) = .;		\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: Normal unused symbols */		\
+ 	__kcrctab_unused  : AT(ADDR(__kcrctab_unused) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start___kcrctab_unused) = .;		\
+-		*(SORT(___kcrctab_unused+*))				\
++		KEEP(*(SORT(___kcrctab_unused+*)))			\
+ 		VMLINUX_SYMBOL(__stop___kcrctab_unused) = .;		\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-only unused symbols */		\
+ 	__kcrctab_unused_gpl : AT(ADDR(__kcrctab_unused_gpl) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__start___kcrctab_unused_gpl) = .;	\
+-		*(SORT(___kcrctab_unused_gpl+*))			\
++		KEEP(*(SORT(___kcrctab_unused_gpl+*)))			\
+ 		VMLINUX_SYMBOL(__stop___kcrctab_unused_gpl) = .;	\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: GPL-future-only symbols */		\
+ 	__kcrctab_gpl_future : AT(ADDR(__kcrctab_gpl_future) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__start___kcrctab_gpl_future) = .;	\
+-		*(SORT(___kcrctab_gpl_future+*))			\
++		KEEP(*(SORT(___kcrctab_gpl_future+*)))			\
+ 		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
+ 	}								\
+ 									\
+ 	/* Kernel symbol table: strings */				\
+         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+-		*(__ksymtab_strings)					\
++		KEEP(*(__ksymtab_strings))				\
+ 	}								\
+ 									\
+ 	/* __*init sections */						\
+@@ -422,7 +427,7 @@
+ #define SECURITY_INIT							\
+ 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+-		*(.security_initcall.init) 				\
++		KEEP(*(.security_initcall.init))			\
+ 		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
+ 	}
+ 
+@@ -520,6 +525,7 @@
+ 
+ /* init and exit section handling */
+ #define INIT_DATA							\
++	KEEP(*(SORT(___kentry+*)))					\
+ 	*(.init.data)							\
+ 	MEM_DISCARD(init.data)						\
+ 	KERNEL_CTORS()							\
+@@ -586,7 +592,7 @@
+ 		BSS_FIRST_SECTIONS					\
+ 		*(.bss..page_aligned)					\
+ 		*(.dynbss)						\
+-		*(.bss)							\
++		*(.bss .bss.[0-9a-zA-Z_]*)				\
+ 		*(COMMON)						\
+ 	}
+ 
+@@ -669,12 +675,12 @@
+ 
+ #define INIT_CALLS_LEVEL(level)						\
+ 		VMLINUX_SYMBOL(__initcall##level##_start) = .;		\
+-		*(.initcall##level##.init)				\
+-		*(.initcall##level##s.init)				\
++		KEEP(*(.initcall##level##.init))			\
++		KEEP(*(.initcall##level##s.init))			\
+ 
+ #define INIT_CALLS							\
+ 		VMLINUX_SYMBOL(__initcall_start) = .;			\
+-		*(.initcallearly.init)					\
++		KEEP(*(.initcallearly.init))				\
+ 		INIT_CALLS_LEVEL(0)					\
+ 		INIT_CALLS_LEVEL(1)					\
+ 		INIT_CALLS_LEVEL(2)					\
+@@ -688,21 +694,21 @@
+ 
+ #define CON_INITCALL							\
+ 		VMLINUX_SYMBOL(__con_initcall_start) = .;		\
+-		*(.con_initcall.init)					\
++		KEEP(*(.con_initcall.init))				\
+ 		VMLINUX_SYMBOL(__con_initcall_end) = .;
+ 
+ #define SECURITY_INITCALL						\
+ 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+-		*(.security_initcall.init)				\
++		KEEP(*(.security_initcall.init))			\
+ 		VMLINUX_SYMBOL(__security_initcall_end) = .;
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ #define INIT_RAM_FS							\
+ 	. = ALIGN(4);							\
+ 	VMLINUX_SYMBOL(__initramfs_start) = .;				\
+-	*(.init.ramfs)							\
++	KEEP(*(.init.ramfs))						\
+ 	. = ALIGN(8);							\
+-	*(.init.ramfs.info)
++	KEEP(*(.init.ramfs.info))
+ #else
+ #define INIT_RAM_FS
+ #endif
+diff --git a/init/Makefile b/init/Makefile
+index 8f7604e47999..2cdeb2b401c7 100644
+--- a/init/Makefile
++++ b/init/Makefile
+@@ -2,6 +2,8 @@
+ # Makefile for the linux kernel.
+ #
+ 
++ccflags-y := -fno-function-sections -fno-data-sections
++
+ obj-y                          := main.o version.o mounts.o
+ obj-y                          += noinitramfs.o
+ obj-$(CONFIG_BLK_DEV_INITRD)   += initramfs.o
+-- 
+2.25.1
+
+
+From a9c6aecd014df352a92ca0213b269e81e055c7ac Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 14 Sep 2016 12:24:03 +1000
+Subject: [PATCH 16/32] kbuild: -ffunction-sections fix for archs with
+ conflicting sections
+
+Enabling -ffunction-sections modified the generic linker script to
+pull .text.* sections into regular TEXT_TEXT section, conflicting
+with some architectures. Revert that change and require archs that
+enable the option to ensure they have no conflicting section names,
+and do the appropriate merging.
+
+Reported-by: Guenter Roeck <linux@roeck-us.net>
+Tested-by: Guenter Roeck <linux@roeck-us.net>
+Fixes: b67067f1176d ("kbuild: allow archs to select link dead code/data elimination")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michal Marek <mmarek@suse.com>
+---
+ arch/Kconfig                      |  4 +++-
+ include/asm-generic/vmlinux.lds.h | 13 +++++++++----
+ 2 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index b5cc909e09bf..7217d1caacee 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -457,7 +457,9 @@ config LD_DEAD_CODE_DATA_ELIMINATION
+ 	  This requires that the arch annotates or otherwise protects
+ 	  its external entry points from being discarded. Linker scripts
+ 	  must also merge .text.*, .data.*, and .bss.* correctly into
+-	  output sections.
++	  output sections. Care must be taken not to pull in unrelated
++	  sections (e.g., '.text.init'). Typically '.' in section names
++	  is used to distinguish them from label names / C identifiers.
+ 
+ config HAVE_CONTEXT_TRACKING
+ 	bool
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 093c2dec66d7..efe27ca47eca 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -198,9 +198,9 @@
+ 
+ /*
+  * .data section
+- * -fdata-sections generates .data.identifier which needs to be pulled in
+- * with .data, but don't want to pull in .data..stuff which has its own
+- * requirements. Same for bss.
++ * LD_DEAD_CODE_DATA_ELIMINATION option enables -fdata-sections generates
++ * .data.identifier which needs to be pulled in with .data, but don't want to
++ * pull in .data..stuff which has its own requirements. Same for bss.
+  */
+ #define DATA_DATA							\
+ 	*(.data .data.[0-9a-zA-Z_]*)					\
+@@ -432,7 +432,12 @@
+ 	}
+ 
+ /* .text section. Map to function alignment to avoid address changes
+- * during second ld run in second ld pass when generating System.map */
++ * during second ld run in second ld pass when generating System.map
++ * LD_DEAD_CODE_DATA_ELIMINATION option enables -ffunction-sections generates
++ * .text.identifier which needs to be pulled in with .text , but some
++ * architectures define .text.foo which is not intended to be pulled in here.
++ * Those enabling LD_DEAD_CODE_DATA_ELIMINATION must ensure they don't have
++ * conflicting section names, and must pull in .text.[0-9a-zA-Z_]* */
+ #define TEXT_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		*(.text.hot .text.hot.*)				\
+-- 
+2.25.1
+
+
+From b6943a0b7aa863cd0260ab44cb4bf5f1f0ab45a4 Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Thu, 24 Nov 2016 03:41:41 +1100
+Subject: [PATCH 17/32] kbuild: keep data tables through dead code elimination
+
+When CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is enabled we must ensure
+that we still keep various programatically-accessed tables.
+
+[npiggin: Fold Paul's patches into one, and add a few more tables.
+ diff symbol tables of allyesconfig with/without -gc-sections shows up
+ lost tables quite easily.]
+
+Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michal Marek <mmarek@suse.com>
+---
+ include/asm-generic/vmlinux.lds.h | 68 +++++++++++++++----------------
+ 1 file changed, 34 insertions(+), 34 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index efe27ca47eca..8c17f5fa0652 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -114,7 +114,7 @@
+ #ifdef CONFIG_KPROBES
+ #define KPROBE_BLACKLIST()	. = ALIGN(8);				      \
+ 				VMLINUX_SYMBOL(__start_kprobe_blacklist) = .; \
+-				*(_kprobe_blacklist)			      \
++				KEEP(*(_kprobe_blacklist))		      \
+ 				VMLINUX_SYMBOL(__stop_kprobe_blacklist) = .;
+ #else
+ #define KPROBE_BLACKLIST()
+@@ -123,10 +123,10 @@
+ #ifdef CONFIG_EVENT_TRACING
+ #define FTRACE_EVENTS()	. = ALIGN(8);					\
+ 			VMLINUX_SYMBOL(__start_ftrace_events) = .;	\
+-			*(_ftrace_events)				\
++			KEEP(*(_ftrace_events))				\
+ 			VMLINUX_SYMBOL(__stop_ftrace_events) = .;	\
+ 			VMLINUX_SYMBOL(__start_ftrace_enum_maps) = .;	\
+-			*(_ftrace_enum_map)				\
++			KEEP(*(_ftrace_enum_map))			\
+ 			VMLINUX_SYMBOL(__stop_ftrace_enum_maps) = .;
+ #else
+ #define FTRACE_EVENTS()
+@@ -134,10 +134,10 @@
+ 
+ #ifdef CONFIG_TRACING
+ #define TRACE_PRINTKS() VMLINUX_SYMBOL(__start___trace_bprintk_fmt) = .;      \
+-			 *(__trace_printk_fmt) /* Trace_printk fmt' pointer */ \
++			 KEEP(*(__trace_printk_fmt)) /* Trace_printk fmt' pointer */ \
+ 			 VMLINUX_SYMBOL(__stop___trace_bprintk_fmt) = .;
+ #define TRACEPOINT_STR() VMLINUX_SYMBOL(__start___tracepoint_str) = .;	\
+-			 *(__tracepoint_str) /* Trace_printk fmt' pointer */ \
++			 KEEP(*(__tracepoint_str)) /* Trace_printk fmt' pointer */ \
+ 			 VMLINUX_SYMBOL(__stop___tracepoint_str) = .;
+ #else
+ #define TRACE_PRINTKS()
+@@ -147,7 +147,7 @@
+ #ifdef CONFIG_FTRACE_SYSCALLS
+ #define TRACE_SYSCALLS() . = ALIGN(8);					\
+ 			 VMLINUX_SYMBOL(__start_syscalls_metadata) = .;	\
+-			 *(__syscalls_metadata)				\
++			 KEEP(*(__syscalls_metadata))			\
+ 			 VMLINUX_SYMBOL(__stop_syscalls_metadata) = .;
+ #else
+ #define TRACE_SYSCALLS()
+@@ -156,7 +156,7 @@
+ #ifdef CONFIG_SERIAL_EARLYCON
+ #define EARLYCON_TABLE() STRUCT_ALIGN();			\
+ 			 VMLINUX_SYMBOL(__earlycon_table) = .;	\
+-			 *(__earlycon_table)			\
++			 KEEP(*(__earlycon_table))		\
+ 			 VMLINUX_SYMBOL(__earlycon_table_end) = .;
+ #else
+ #define EARLYCON_TABLE()
+@@ -169,8 +169,8 @@
+ #define _OF_TABLE_1(name)						\
+ 	. = ALIGN(8);							\
+ 	VMLINUX_SYMBOL(__##name##_of_table) = .;			\
+-	*(__##name##_of_table)						\
+-	*(__##name##_of_table_end)
++	KEEP(*(__##name##_of_table))					\
++	KEEP(*(__##name##_of_table_end))
+ 
+ #define CLKSRC_OF_TABLES()	OF_TABLE(CONFIG_CLKSRC_OF, clksrc)
+ #define IRQCHIP_OF_MATCH_TABLE() OF_TABLE(CONFIG_IRQCHIP, irqchip)
+@@ -184,7 +184,7 @@
+ #define ACPI_PROBE_TABLE(name)						\
+ 	. = ALIGN(8);							\
+ 	VMLINUX_SYMBOL(__##name##_acpi_probe_table) = .;		\
+-	*(__##name##_acpi_probe_table)					\
++	KEEP(*(__##name##_acpi_probe_table))				\
+ 	VMLINUX_SYMBOL(__##name##_acpi_probe_table_end) = .;
+ #else
+ #define ACPI_PROBE_TABLE(name)
+@@ -193,7 +193,7 @@
+ #define KERNEL_DTB()							\
+ 	STRUCT_ALIGN();							\
+ 	VMLINUX_SYMBOL(__dtb_start) = .;				\
+-	*(.dtb.init.rodata)						\
++	KEEP(*(.dtb.init.rodata))					\
+ 	VMLINUX_SYMBOL(__dtb_end) = .;
+ 
+ /*
+@@ -214,11 +214,11 @@
+ 	/* implement dynamic printk debug */				\
+ 	. = ALIGN(8);                                                   \
+ 	VMLINUX_SYMBOL(__start___jump_table) = .;                       \
+-	*(__jump_table)                                                 \
++	KEEP(*(__jump_table))                                           \
+ 	VMLINUX_SYMBOL(__stop___jump_table) = .;                        \
+ 	. = ALIGN(8);							\
+ 	VMLINUX_SYMBOL(__start___verbose) = .;                          \
+-	*(__verbose)                                                    \
++	KEEP(*(__verbose))                                              \
+ 	VMLINUX_SYMBOL(__stop___verbose) = .;				\
+ 	LIKELY_PROFILE()		       				\
+ 	BRANCH_PROFILE()						\
+@@ -269,10 +269,10 @@
+ 		VMLINUX_SYMBOL(__start_rodata) = .;			\
+ 		*(.rodata) *(.rodata.*)					\
+ 		RO_AFTER_INIT_DATA	/* Read only after init */	\
+-		*(__vermagic)		/* Kernel version magic */	\
++		KEEP(*(__vermagic))	/* Kernel version magic */	\
+ 		. = ALIGN(8);						\
+ 		VMLINUX_SYMBOL(__start___tracepoints_ptrs) = .;		\
+-		*(__tracepoints_ptrs)	/* Tracepoints: pointer array */\
++		KEEP(*(__tracepoints_ptrs)) /* Tracepoints: pointer array */ \
+ 		VMLINUX_SYMBOL(__stop___tracepoints_ptrs) = .;		\
+ 		*(__tracepoints_strings)/* Tracepoints: strings */	\
+ 	}								\
+@@ -286,35 +286,35 @@
+ 	/* PCI quirks */						\
+ 	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_early) = .;		\
+-		*(.pci_fixup_early)					\
++		KEEP(*(.pci_fixup_early))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_early) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_header) = .;		\
+-		*(.pci_fixup_header)					\
++		KEEP(*(.pci_fixup_header))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_header) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_final) = .;		\
+-		*(.pci_fixup_final)					\
++		KEEP(*(.pci_fixup_final))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_final) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_enable) = .;		\
+-		*(.pci_fixup_enable)					\
++		KEEP(*(.pci_fixup_enable))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_enable) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_resume) = .;		\
+-		*(.pci_fixup_resume)					\
++		KEEP(*(.pci_fixup_resume))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_resume_early) = .;	\
+-		*(.pci_fixup_resume_early)				\
++		KEEP(*(.pci_fixup_resume_early))			\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_resume_early) = .;	\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_suspend) = .;		\
+-		*(.pci_fixup_suspend)					\
++		KEEP(*(.pci_fixup_suspend))				\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_suspend) = .;		\
+ 		VMLINUX_SYMBOL(__start_pci_fixups_suspend_late) = .;	\
+-		*(.pci_fixup_suspend_late)				\
++		KEEP(*(.pci_fixup_suspend_late))			\
+ 		VMLINUX_SYMBOL(__end_pci_fixups_suspend_late) = .;	\
+ 	}								\
+ 									\
+ 	/* Built-in firmware blobs */					\
+ 	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
+-		*(.builtin_fw)						\
++		KEEP(*(.builtin_fw))					\
+ 		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
+ 	}								\
+ 									\
+@@ -392,7 +392,7 @@
+ 									\
+ 	/* Kernel symbol table: strings */				\
+         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+-		KEEP(*(__ksymtab_strings))				\
++		*(__ksymtab_strings)					\
+ 	}								\
+ 									\
+ 	/* __*init sections */						\
+@@ -405,14 +405,14 @@
+ 	/* Built-in module parameters. */				\
+ 	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__start___param) = .;			\
+-		*(__param)						\
++		KEEP(*(__param))					\
+ 		VMLINUX_SYMBOL(__stop___param) = .;			\
+ 	}								\
+ 									\
+ 	/* Built-in module versions. */					\
+ 	__modver : AT(ADDR(__modver) - LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__start___modver) = .;			\
+-		*(__modver)						\
++		KEEP(*(__modver))					\
+ 		VMLINUX_SYMBOL(__stop___modver) = .;			\
+ 		. = ALIGN((align));					\
+ 		VMLINUX_SYMBOL(__end_rodata) = .;			\
+@@ -504,7 +504,7 @@
+ 	. = ALIGN(align);						\
+ 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start___ex_table) = .;			\
+-		*(__ex_table)						\
++		KEEP(*(__ex_table))					\
+ 		VMLINUX_SYMBOL(__stop___ex_table) = .;			\
+ 	}
+ 
+@@ -520,9 +520,9 @@
+ #ifdef CONFIG_CONSTRUCTORS
+ #define KERNEL_CTORS()	. = ALIGN(8);			   \
+ 			VMLINUX_SYMBOL(__ctors_start) = .; \
+-			*(.ctors)			   \
+-			*(SORT(.init_array.*))		   \
+-			*(.init_array)			   \
++			KEEP(*(.ctors))			   \
++			KEEP(*(SORT(.init_array.*)))	   \
++			KEEP(*(.init_array))		   \
+ 			VMLINUX_SYMBOL(__ctors_end) = .;
+ #else
+ #define KERNEL_CTORS()
+@@ -646,7 +646,7 @@
+ 	. = ALIGN(8);							\
+ 	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start___bug_table) = .;		\
+-		*(__bug_table)						\
++		KEEP(*(__bug_table))					\
+ 		VMLINUX_SYMBOL(__stop___bug_table) = .;			\
+ 	}
+ #else
+@@ -658,7 +658,7 @@
+ 	. = ALIGN(4);							\
+ 	.tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__tracedata_start) = .;			\
+-		*(.tracedata)						\
++		KEEP(*(.tracedata))					\
+ 		VMLINUX_SYMBOL(__tracedata_end) = .;			\
+ 	}
+ #else
+@@ -675,7 +675,7 @@
+ #define INIT_SETUP(initsetup_align)					\
+ 		. = ALIGN(initsetup_align);				\
+ 		VMLINUX_SYMBOL(__setup_start) = .;			\
+-		*(.init.setup)						\
++		KEEP(*(.init.setup))					\
+ 		VMLINUX_SYMBOL(__setup_end) = .;
+ 
+ #define INIT_CALLS_LEVEL(level)						\
+-- 
+2.25.1
+
+
+From 03bde15dd5e0431f1c6da222795f7cef248d5ecc Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 26 Jul 2017 22:46:27 +1000
+Subject: [PATCH 18/32] kbuild: linker script do not match C names unless
+ LD_DEAD_CODE_DATA_ELIMINATION is configured
+
+The .data and .bss sections were modified in the generic linker script to
+pull in sections named .data.<C identifier>, which are generated by gcc with
+-ffunction-sections and -fdata-sections options.
+
+The problem with this pattern is it can also match section names that Linux
+defines explicitly, e.g., .data.unlikely. This can cause Linux sections to
+get moved into the wrong place.
+
+The way to avoid this is to use ".." separators for explicit section names
+(the dot character is valid in a section name but not a C identifier).
+However currently there are sections which don't follow this rule, so for
+now just disable the wild card by default.
+
+Example: http://marc.info/?l=linux-arm-kernel&m=150106824024221&w=2
+
+Cc: <stable@vger.kernel.org> # 4.9
+Fixes: b67067f1176df ("kbuild: allow archs to select link dead code/data elimination")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+ include/asm-generic/vmlinux.lds.h | 38 +++++++++++++++++++++----------
+ 1 file changed, 26 insertions(+), 12 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 8c17f5fa0652..4635869dbe88 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -59,6 +59,22 @@
+ /* Align . to a 8 byte boundary equals to maximum function alignment. */
+ #define ALIGN_FUNCTION()  . = ALIGN(8)
+ 
++/*
++ * LD_DEAD_CODE_DATA_ELIMINATION option enables -fdata-sections, which
++ * generates .data.identifier sections, which need to be pulled in with
++ * .data. We don't want to pull in .data..other sections, which Linux
++ * has defined. Same for text and bss.
++ */
++#ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
++#define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
++#define DATA_MAIN .data .data.[0-9a-zA-Z_]*
++#define BSS_MAIN .bss .bss.[0-9a-zA-Z_]*
++#else
++#define TEXT_MAIN .text
++#define DATA_MAIN .data
++#define BSS_MAIN .bss
++#endif
++
+ /*
+  * Align to a 32 byte boundary equal to the
+  * alignment gcc 4.5 uses for a struct
+@@ -198,12 +214,9 @@
+ 
+ /*
+  * .data section
+- * LD_DEAD_CODE_DATA_ELIMINATION option enables -fdata-sections generates
+- * .data.identifier which needs to be pulled in with .data, but don't want to
+- * pull in .data..stuff which has its own requirements. Same for bss.
+  */
+ #define DATA_DATA							\
+-	*(.data .data.[0-9a-zA-Z_]*)					\
++	*(DATA_MAIN)							\
+ 	*(.ref.data)							\
+ 	*(.data..shared_aligned) /* percpu related */			\
+ 	MEM_KEEP(init.data)						\
+@@ -431,17 +444,18 @@
+ 		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
+ 	}
+ 
+-/* .text section. Map to function alignment to avoid address changes
++/*
++ * .text section. Map to function alignment to avoid address changes
+  * during second ld run in second ld pass when generating System.map
+- * LD_DEAD_CODE_DATA_ELIMINATION option enables -ffunction-sections generates
+- * .text.identifier which needs to be pulled in with .text , but some
+- * architectures define .text.foo which is not intended to be pulled in here.
+- * Those enabling LD_DEAD_CODE_DATA_ELIMINATION must ensure they don't have
+- * conflicting section names, and must pull in .text.[0-9a-zA-Z_]* */
++ *
++ * TEXT_MAIN here will match .text.fixup and .text.unlikely if dead
++ * code elimination is enabled, so these sections should be converted
++ * to use ".." first.
++ */
+ #define TEXT_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		*(.text.hot .text.hot.*)				\
+-		*(.text .text.fixup)					\
++		*(TEXT_MAIN .text.fixup)					\
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
+ 		*(.ref.text)						\
+@@ -597,7 +611,7 @@
+ 		BSS_FIRST_SECTIONS					\
+ 		*(.bss..page_aligned)					\
+ 		*(.dynbss)						\
+-		*(.bss .bss.[0-9a-zA-Z_]*)				\
++		*(BSS_MAIN)						\
+ 		*(COMMON)						\
+ 	}
+ 
+-- 
+2.25.1
+
+
+From 45291965cdf33b3564b5f09627700be79e81d49c Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 9 May 2018 22:59:58 +1000
+Subject: [PATCH 19/32] kbuild: Fix asm-generic/vmlinux.lds.h for
+ LD_DEAD_CODE_DATA_ELIMINATION
+
+KEEP more tables, and add the function/data section wildcard to more
+section selections.
+
+This is a little ad-hoc at the moment, but kernel code should be moved
+to consistently use .text..x (note: double dots) for explicit sections
+and all references to it in the linker script can be made with
+TEXT_MAIN, and similarly for other sections.
+
+For now, let's see if major architectures move to enabling this option
+then we can do some refactoring passes. Otherwise if it remains unused
+or superseded by LTO, this may not be required.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+ include/asm-generic/vmlinux.lds.h | 45 ++++++++++++++++++-------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 4635869dbe88..d9ce48766124 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -64,15 +64,24 @@
+  * generates .data.identifier sections, which need to be pulled in with
+  * .data. We don't want to pull in .data..other sections, which Linux
+  * has defined. Same for text and bss.
++ *
++ * RODATA_MAIN is not used because existing code already defines .rodata.x
++ * sections to be brought in with rodata.
+  */
+ #ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+ #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
+ #define DATA_MAIN .data .data.[0-9a-zA-Z_]*
++#define SDATA_MAIN .sdata .sdata.[0-9a-zA-Z_]*
++#define RODATA_MAIN .rodata .rodata.[0-9a-zA-Z_]*
+ #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]*
++#define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
+ #else
+ #define TEXT_MAIN .text
+ #define DATA_MAIN .data
++#define SDATA_MAIN .sdata
++#define RODATA_MAIN .rodata
+ #define BSS_MAIN .bss
++#define SBSS_MAIN .sbss
+ #endif
+ 
+ /*
+@@ -105,7 +114,7 @@
+ #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ #define MCOUNT_REC()	. = ALIGN(8);				\
+ 			VMLINUX_SYMBOL(__start_mcount_loc) = .; \
+-			*(__mcount_loc)				\
++			KEEP(*(__mcount_loc))			\
+ 			VMLINUX_SYMBOL(__stop_mcount_loc) = .;
+ #else
+ #define MCOUNT_REC()
+@@ -113,7 +122,7 @@
+ 
+ #ifdef CONFIG_TRACE_BRANCH_PROFILING
+ #define LIKELY_PROFILE()	VMLINUX_SYMBOL(__start_annotated_branch_profile) = .; \
+-				*(_ftrace_annotated_branch)			      \
++				KEEP(*(_ftrace_annotated_branch))		      \
+ 				VMLINUX_SYMBOL(__stop_annotated_branch_profile) = .;
+ #else
+ #define LIKELY_PROFILE()
+@@ -121,7 +130,7 @@
+ 
+ #ifdef CONFIG_PROFILE_ALL_BRANCHES
+ #define BRANCH_PROFILE()	VMLINUX_SYMBOL(__start_branch_profile) = .;   \
+-				*(_ftrace_branch)			      \
++				KEEP(*(_ftrace_branch))			      \
+ 				VMLINUX_SYMBOL(__stop_branch_profile) = .;
+ #else
+ #define BRANCH_PROFILE()
+@@ -219,8 +228,8 @@
+ 	*(DATA_MAIN)							\
+ 	*(.ref.data)							\
+ 	*(.data..shared_aligned) /* percpu related */			\
+-	MEM_KEEP(init.data)						\
+-	MEM_KEEP(exit.data)						\
++	MEM_KEEP(init.data*)						\
++	MEM_KEEP(exit.data*)						\
+ 	*(.data.unlikely)						\
+ 	STRUCT_ALIGN();							\
+ 	*(__tracepoints)						\
+@@ -459,8 +468,8 @@
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
+ 		*(.ref.text)						\
+-	MEM_KEEP(init.text)						\
+-	MEM_KEEP(exit.text)						\
++	MEM_KEEP(init.text*)						\
++	MEM_KEEP(exit.text*)						\
+ 
+ 
+ /* sched.text is aling to function alignment to secure we have same
+@@ -504,7 +513,7 @@
+ 		VMLINUX_SYMBOL(__softirqentry_text_end) = .;
+ 
+ /* Section used for early init (in .S files) */
+-#define HEAD_TEXT  *(.head.text)
++#define HEAD_TEXT  KEEP(*(.head.text))
+ 
+ #define HEAD_TEXT_SECTION							\
+ 	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {		\
+@@ -545,11 +554,11 @@
+ /* init and exit section handling */
+ #define INIT_DATA							\
+ 	KEEP(*(SORT(___kentry+*)))					\
+-	*(.init.data)							\
+-	MEM_DISCARD(init.data)						\
++	*(.init.data init.data.*)					\
++	MEM_DISCARD(init.data*)						\
+ 	KERNEL_CTORS()							\
+ 	MCOUNT_REC()							\
+-	*(.init.rodata)							\
++	*(.init.rodata .init.rodata.*)					\
+ 	FTRACE_EVENTS()							\
+ 	TRACE_SYSCALLS()						\
+ 	KPROBE_BLACKLIST()						\
+@@ -567,16 +576,16 @@
+ 	EARLYCON_TABLE()
+ 
+ #define INIT_TEXT							\
+-	*(.init.text)							\
++	*(.init.text .init.text.*)					\
+ 	*(.text.startup)						\
+-	MEM_DISCARD(init.text)
++	MEM_DISCARD(init.text*)
+ 
+ #define EXIT_DATA							\
+-	*(.exit.data)							\
++	*(.exit.data .exit.data.*)					\
+ 	*(.fini_array)							\
+ 	*(.dtors)							\
+-	MEM_DISCARD(exit.data)						\
+-	MEM_DISCARD(exit.rodata)
++	MEM_DISCARD(exit.data*)						\
++	MEM_DISCARD(exit.rodata*)
+ 
+ #define EXIT_TEXT							\
+ 	*(.exit.text)							\
+@@ -593,7 +602,7 @@
+ #define SBSS(sbss_align)						\
+ 	. = ALIGN(sbss_align);						\
+ 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
+-		*(.sbss)						\
++		*(SBSS_MAIN)						\
+ 		*(.scommon)						\
+ 	}
+ 
+@@ -682,7 +691,7 @@
+ #define NOTES								\
+ 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__start_notes) = .;			\
+-		*(.note.*)						\
++		KEEP(*(.note.*))					\
+ 		VMLINUX_SYMBOL(__stop_notes) = .;			\
+ 	}
+ 
+-- 
+2.25.1
+
+
+From 26b02a772e8555dfeb6fa76505833685a534938e Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 9 May 2018 23:00:00 +1000
+Subject: [PATCH 20/32] kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selectable if enabled
+
+Architectures that are capable can select
+HAVE_LD_DEAD_CODE_DATA_ELIMINATION to enable selection of that
+option (as an EXPERT kernel option).
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+ arch/Kconfig | 15 ---------------
+ init/Kconfig | 27 +++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 15 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 7217d1caacee..f545fa15ed5b 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -446,21 +446,6 @@ config THIN_ARCHIVES
+ 	  Select this if the architecture wants to use thin archives
+ 	  instead of ld -r to create the built-in.o files.
+ 
+-config LD_DEAD_CODE_DATA_ELIMINATION
+-	bool
+-	help
+-	  Select this if the architecture wants to do dead code and
+-	  data elimination with the linker by compiling with
+-	  -ffunction-sections -fdata-sections and linking with
+-	  --gc-sections.
+-
+-	  This requires that the arch annotates or otherwise protects
+-	  its external entry points from being discarded. Linker scripts
+-	  must also merge .text.*, .data.*, and .bss.* correctly into
+-	  output sections. Care must be taken not to pull in unrelated
+-	  sections (e.g., '.text.init'). Typically '.' in section names
+-	  is used to distinguish them from label names / C identifiers.
+-
+ config HAVE_CONTEXT_TRACKING
+ 	bool
+ 	help
+diff --git a/init/Kconfig b/init/Kconfig
+index 7c5cd41acbe1..e6bd474de5f5 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1515,6 +1515,33 @@ config LTO
+ 	bool "Enable Link Time Optimization"
+ 	select THIN_ARCHIVES
+ 
++config HAVE_LD_DEAD_CODE_DATA_ELIMINATION
++	bool
++	help
++	  This requires that the arch annotates or otherwise protects
++	  its external entry points from being discarded. Linker scripts
++	  must also merge .text.*, .data.*, and .bss.* correctly into
++	  output sections. Care must be taken not to pull in unrelated
++	  sections (e.g., '.text.init'). Typically '.' in section names
++	  is used to distinguish them from label names / C identifiers.
++
++config LD_DEAD_CODE_DATA_ELIMINATION
++	bool "Dead code and data elimination (EXPERIMENTAL)"
++	depends on HAVE_LD_DEAD_CODE_DATA_ELIMINATION
++	depends on EXPERT
++	help
++	  Select this if the architecture wants to do dead code and
++	  data elimination with the linker by compiling with
++	  -ffunction-sections -fdata-sections, and linking with
++	  --gc-sections.
++
++	  This can reduce on disk and in-memory size of the kernel
++	  code and static data, particularly for small configs and
++	  on small systems. This has the possibility of introducing
++	  silently broken kernel if the required annotations are not
++	  present. This option is not well tested yet, so use at your
++	  own risk.
++
+ config SYSCTL
+ 	bool
+ 
+-- 
+2.25.1
+
+
+From 3a3ff98427025f46c41106b57cdea3b08c2cd17b Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Thu, 26 Mar 2020 17:51:02 -0700
+Subject: [PATCH 21/32] arm64: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+
+DCE is not problematic on arm64 and works out of the box. Let it be
+used.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ arch/arm64/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 33fb9d6c5b7e..f50814d92eb2 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -80,6 +80,7 @@ config ARM64
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_HW_BREAKPOINT if PERF_EVENTS
+ 	select HAVE_IRQ_TIME_ACCOUNTING
++	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
+ 	select HAVE_MEMBLOCK
+ 	select HAVE_PATA_PLATFORM
+ 	select HAVE_PERF_EVENTS
+-- 
+2.25.1
+
+
+From d421baba54fb4df32ec21fc17e04332f406c9d68 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Thu, 26 Mar 2020 18:58:42 -0700
+Subject: [PATCH 22/32] lib/nlattr.c: Fix stringop overflow warning in
+ nla_strcmp()
+
+strlen() returns a size_t value, so store it in a size_t variable.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ lib/nlattr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/nlattr.c b/lib/nlattr.c
+index f5907d23272d..cc09c8402637 100644
+--- a/lib/nlattr.c
++++ b/lib/nlattr.c
+@@ -311,7 +311,7 @@ EXPORT_SYMBOL(nla_memcmp);
+  */
+ int nla_strcmp(const struct nlattr *nla, const char *str)
+ {
+-	int len = strlen(str);
++	size_t len = strlen(str);
+ 	char *buf = nla_data(nla);
+ 	int attrlen = nla_len(nla);
+ 	int d;
+-- 
+2.25.1
+
+
+From 75208ac69b6ecab91adce34032ad2f46e06c5508 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Thu, 26 Mar 2020 23:59:19 -0700
+Subject: [PATCH 23/32] arm64: Disable -fwhole-program for vDSO
+
+The vDSO library is obviously not self-contained, so it doesn't qualify
+for -fwhole-program. Using -fwhole-program on the vDSO library breaks
+it, so disable -fwhole-program to fix it.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ arch/arm64/kernel/vdso/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+index 4adcb532ac6a..6c69d5db9f36 100644
+--- a/arch/arm64/kernel/vdso/Makefile
++++ b/arch/arm64/kernel/vdso/Makefile
+@@ -18,6 +18,7 @@ ccflags-y := -shared -fno-common -fno-builtin -fno-stack-protector
+ ccflags-y += -DDISABLE_BRANCH_PROFILING -ffixed-x18
+ ccflags-y += -nostdlib -Wl,-soname=linux-vdso.so.1 \
+ 		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
++ccflags-y += $(call cc-option, -fno-whole-program)
+ 
+ # Force -O2 to avoid libgcc dependencies
+ CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
+-- 
+2.25.1
+
+
+From d9662fa5d72a24633a182838ab57e58a8b06d9d7 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Sun, 29 Mar 2020 10:47:41 -0700
+Subject: [PATCH 24/32] soc: qcom: spcom: Fix spcom_register_chardev() section
+ mismatch
+
+spcom_register_chardev() is called by this driver's probe function,
+which isn't in (and shouldn't be in) the __init section. Move
+spcom_register_chardev() out from the __init section to fix the
+mismatch.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ drivers/soc/qcom/spcom.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/soc/qcom/spcom.c b/drivers/soc/qcom/spcom.c
+index 68199d9adb02..df2076c4cad8 100644
+--- a/drivers/soc/qcom/spcom.c
++++ b/drivers/soc/qcom/spcom.c
+@@ -2604,7 +2604,7 @@ exit_destroy_device:
+ 	return -EFAULT;
+ }
+ 
+-static int __init spcom_register_chardev(void)
++static int spcom_register_chardev(void)
+ {
+ 	int ret;
+ 	unsigned baseminor = 0;
+-- 
+2.25.1
+
+
+From 39771e11bd31d227fae8ace8e60858f8e907c529 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Thu, 7 May 2020 23:46:47 -0700
+Subject: [PATCH 25/32] arm64: Use a macro to silence current_stack_pointer
+ warning with LTO
+
+GCC spams the following warning during link time with LTO:
+arch/arm64/include/asm/stack_pointer.h:7: warning: register of 'current_stack_pointer' used for multiple global register variables
+
+Resolve it by tricking GCC with a macro so that it thinks the register
+value is only used once (i.e., inside the macro).
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ arch/arm64/include/asm/stack_pointer.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/include/asm/stack_pointer.h b/arch/arm64/include/asm/stack_pointer.h
+index ffcdf742cddf..a709cb23349f 100644
+--- a/arch/arm64/include/asm/stack_pointer.h
++++ b/arch/arm64/include/asm/stack_pointer.h
+@@ -4,6 +4,11 @@
+ /*
+  * how to get the current stack pointer from C
+  */
+-register unsigned long current_stack_pointer asm ("sp");
++#define current_stack_pointer \
++({									\
++	register unsigned long __current_stack_pointer asm ("sp");	\
++									\
++	__current_stack_pointer;					\
++})
+ 
+ #endif /* __ASM_STACK_POINTER_H */
+-- 
+2.25.1
+
+
+From cde9be9f67f787ed043e2ae39c26fa8be94921c8 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Thu, 7 May 2020 23:46:48 -0700
+Subject: [PATCH 26/32] kbuild: Pass -flinker-output=nolto-rel for LTO to
+ silence warning
+
+GCC gives the following warning because some of the linked files are
+written in assembly, and thus cannot be optimized with LTO:
+warning: incremental linking of LTO and non-LTO objects; using -flinker-output=nolto-rel which will bypass whole program optimization
+
+This warning doesn't really mean anything though because we generate
+objects as thin archives, so just appease GCC by explicitly giving it
+-flinker-output=nolto-rel.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 082d034dafb7..e42ca913fdb9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -649,7 +649,8 @@ ifdef CONFIG_LTO
+ LTO_CFLAGS    := -flto -flto=jobserver -fno-fat-lto-objects \
+                  -fuse-linker-plugin -fwhole-program
+ KBUILD_CFLAGS += $(LTO_CFLAGS)
+-LTO_LDFLAGS   := $(LTO_CFLAGS) -Wno-lto-type-mismatch -Wno-psabi
++LTO_LDFLAGS   := $(LTO_CFLAGS) -Wno-lto-type-mismatch -Wno-psabi \
++                 -Wno-stringop-overflow -flinker-output=nolto-rel
+ LDFINAL       := $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
+ AR            := $(CROSS_COMPILE)gcc-ar
+ NM            := $(CROSS_COMPILE)gcc-nm
+-- 
+2.25.1
+
+
+From e49b5bd8ba2f2abf06dc9b9f6705db772fd103dc Mon Sep 17 00:00:00 2001
+From: Sami Tolvanen <samitolvanen@google.com>
+Date: Tue, 13 Feb 2018 14:00:14 -0800
+Subject: [PATCH 27/32] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
+
+Keep .entry.tramp.text to avoid the "Entry trampoline text too big"
+error while linking.
+
+Bug: 62093296
+Bug: 67506682
+Change-Id: Idab3216244bd2f8537bb2a5bb47e25e8588394da
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/arm64/kernel/vmlinux.lds.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
+index 718f4c4be05c..fe14d821386f 100644
+--- a/arch/arm64/kernel/vmlinux.lds.S
++++ b/arch/arm64/kernel/vmlinux.lds.S
+@@ -61,7 +61,7 @@ jiffies = jiffies_64;
+ #define TRAMP_TEXT					\
+ 	. = ALIGN(PAGE_SIZE);				\
+ 	VMLINUX_SYMBOL(__entry_tramp_text_start) = .;	\
+-	*(.entry.tramp.text)				\
++	KEEP(*(.entry.tramp.text))			\
+ 	. = ALIGN(PAGE_SIZE);				\
+ 	VMLINUX_SYMBOL(__entry_tramp_text_end) = .;
+ #else
+-- 
+2.25.1
+
+
+From a9c4d60cb5a85d6d5cbdfee8d7d33c2feb7b2f5f Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Tue, 12 May 2020 12:00:08 -0700
+Subject: [PATCH 28/32] kbuild: Increase GCC automatic inline instruction limit
+ to 1000 for LTO
+
+GCC 10 updated its interprocedural optimizer's logic to have it make
+more conservative inlining decisions, resulting in worse syscall and
+hackbench performance compared to GCC 9. Although the max-inline-insns-
+auto parameter's value was not altered, increasing it from the -O3
+default of 30 to 1000 instructions yields improved performance with LTO,
+surpassing GCC 9.
+
+Do this only for LTO though because for non-LTO builds, this causes GCC
+to produce mountains of spurious -Wmaybe-used-uninitialized warnings.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index e42ca913fdb9..b20a6430e476 100644
+--- a/Makefile
++++ b/Makefile
+@@ -648,7 +648,7 @@ endif
+ ifdef CONFIG_LTO
+ LTO_CFLAGS    := -flto -flto=jobserver -fno-fat-lto-objects \
+                  -fuse-linker-plugin -fwhole-program
+-KBUILD_CFLAGS += $(LTO_CFLAGS)
++KBUILD_CFLAGS += $(LTO_CFLAGS) --param=max-inline-insns-auto=1000
+ LTO_LDFLAGS   := $(LTO_CFLAGS) -Wno-lto-type-mismatch -Wno-psabi \
+                  -Wno-stringop-overflow -flinker-output=nolto-rel
+ LDFINAL       := $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
+-- 
+2.25.1
+
+
+From 149e48dfebb76d63e7517491047e3b40accb4984 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Wed, 10 Jul 2019 19:18:40 -0700
+Subject: [PATCH 29/32] Makefile: Use pipes rather than temporary files for
+ intermediate steps
+
+GCC supports the use of pipes for intermediate compilation steps (e.g.
+passing the generated assembly code to the assembler) as a replacement for
+temporary files. This bypasses VFS and other layers which can introduce
+substantial amounts of overhead and instead redirects data directly
+between processes.
+
+The final product and generated code are unaffected. Memory usage while
+compiling is slightly higher.
+
+Tests showed a substantial reduction in build time when using GCC to
+compile an x86 4.19 kernel:
+Using temporary files in tmpfs: 2m41s
+Using pipes:                    2m36s
+
+Similar benefits were observed with an Android arm64 4.9 kernel:
+Using tmpfs: 5m34s
+Using pipes: 4m33s
+
+Enable the feature when possible (i.e. when the compiler supports it) to
+speed up builds at effectively no cost for many setups, particularly
+those with weaker CPUs.
+
+Test: kernel compiles and boots
+Signed-off-by: Danny Lin <danny@kdrag0n.dev>
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index b20a6430e476..1c464f354248 100644
+--- a/Makefile
++++ b/Makefile
+@@ -312,7 +312,7 @@ else
+ HOSTCC       = gcc
+ HOSTCXX      = g++
+ endif
+-HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
++HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -pipe
+ HOSTCXXFLAGS = -O2
+ 
+ # Decide whether to build built-in, modular, or both.
+@@ -398,7 +398,7 @@ LINUXINCLUDE    := \
+ 
+ KBUILD_CPPFLAGS := -D__KERNEL__
+ 
+-KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
++KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -pipe \
+ 		   -fno-strict-aliasing -fno-common \
+ 		   -Werror-implicit-function-declaration \
+ 		   -Wno-format-security \
+-- 
+2.25.1
+
+
+From 79547aaab0bb439c639dd3bffad8e20aa678df78 Mon Sep 17 00:00:00 2001
+From: Tyler Nijmeh <tylernij@gmail.com>
+Date: Sat, 18 May 2019 14:27:21 -0700
+Subject: [PATCH 30/32] arch: Allow all archs to select optimized inlining
+
+Perhaps we can allow GCC to more efficiently optimize code for embedded
+systems.
+
+Signed-off-by: Tyler Nijmeh <tylernij@gmail.com>
+---
+ arch/x86/Kconfig       |  3 ---
+ arch/x86/Kconfig.debug | 14 --------------
+ lib/Kconfig.debug      | 17 +++++++++++++++++
+ 3 files changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3d5d6f51d74c..c98435a425ef 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -272,9 +272,6 @@ config ZONE_DMA32
+ config AUDIT_ARCH
+ 	def_bool y if X86_64
+ 
+-config ARCH_SUPPORTS_OPTIMIZED_INLINING
+-	def_bool y
+-
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y
+ 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 056717be912f..fc2365e5c628 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -304,20 +304,6 @@ config CPA_DEBUG
+ 	---help---
+ 	  Do change_page_attr() self-tests every 30 seconds.
+ 
+-config OPTIMIZE_INLINING
+-	bool "Allow gcc to uninline functions marked 'inline'"
+-	---help---
+-	  This option determines if the kernel forces gcc to inline the functions
+-	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+-	  do what it thinks is best, which is desirable for the gcc 3.x series of
+-	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
+-	  enabling this option will generate a smaller kernel there. Hopefully
+-	  this algorithm is so good that allowing gcc 4.x and above to make the
+-	  decision will become the default in the future. Until then this option
+-	  is there to test gcc for this.
+-
+-	  If unsure, say N.
+-
+ config DEBUG_ENTRY
+ 	bool "Debug low-level entry code"
+ 	depends on DEBUG_KERNEL
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index c2b809cbd430..816af004228a 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -329,11 +329,28 @@ config SECTION_MISMATCH_WARN_ONLY
+ 
+ 	  If unsure, say Y.
+ 
++config OPTIMIZE_INLINING
++	bool "Allow gcc to uninline functions marked 'inline'"
++	---help---
++	  This option determines if the kernel forces gcc to inline the functions
++	  developers have marked 'inline'. Doing so takes away freedom from gcc to
++	  do what it thinks is best, which is desirable for the gcc 3.x series of
++	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
++	  enabling this option will generate a smaller kernel there. Hopefully
++	  this algorithm is so good that allowing gcc 4.x and above to make the
++	  decision will become the default in the future. Until then this option
++	  is there to test gcc for this.
++
++	  If unsure, say N.
++
+ #
+ # Select this config option from the architecture Kconfig, if it
+ # is preferred to always offer frame pointers as a config
+ # option on the architecture (regardless of KERNEL_DEBUG):
+ #
++config ARCH_SUPPORTS_OPTIMIZED_INLINING
++	def_bool y
++
+ config ARCH_WANT_FRAME_POINTERS
+ 	bool
+ 	help
+-- 
+2.25.1
+
+
+From a9d08d938995986f81dc9ca3b08a2488dcef6897 Mon Sep 17 00:00:00 2001
+From: Tyler Nijmeh <tylernij@gmail.com>
+Date: Sat, 18 May 2019 14:31:39 -0700
+Subject: [PATCH 31/32] configs: Optimize inlining of arch
+
+Signed-off-by: Tyler Nijmeh <tylernij@gmail.com>
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ arch/arm64/configs/fakerad_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
 diff --git a/arch/arm64/configs/fakerad_defconfig b/arch/arm64/configs/fakerad_defconfig
-index f6d83975ae7d..3f6a4e9cff18 100644
+index aec439ac9d25..4dd408c1a9f5 100644
 --- a/arch/arm64/configs/fakerad_defconfig
 +++ b/arch/arm64/configs/fakerad_defconfig
-@@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
+@@ -773,6 +773,8 @@ CONFIG_NLS_UTF8=y
+ # CONFIG_NETWORK_FILESYSTEMS is not set
+ CONFIG_PRINTK_TIME=y
+ CONFIG_DYNAMIC_DEBUG=y
++CONFIG_OPTIMIZE_INLINING=y
++CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_FRAME_WARN=0
+ CONFIG_PANIC_TIMEOUT=5
+-- 
+2.25.1
+
+
+From dff1ed2bd6ffc99544469bb7eff768bd63c690de Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 11 Mar 2020 11:30:43 -0700
+Subject: [PATCH 32/32] configs: Enable Link Time Optimization
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ arch/arm64/configs/fakerad_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/configs/fakerad_defconfig b/arch/arm64/configs/fakerad_defconfig
+index 4dd408c1a9f5..ab5e2f6e90f0 100644
+--- a/arch/arm64/configs/fakerad_defconfig
++++ b/arch/arm64/configs/fakerad_defconfig
+@@ -48,6 +48,8 @@ CONFIG_EMBEDDED=y
  # CONFIG_COMPAT_BRK is not set
  CONFIG_PROFILING=y
  CONFIG_JUMP_LABEL=y
 +CONFIG_LTO=y
++# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
  CONFIG_CC_STACKPROTECTOR_STRONG=y
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 -- 
-2.29.0
+2.25.1
 

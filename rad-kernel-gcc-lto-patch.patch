@@ -1,4 +1,4 @@
-From 81aa621dfc69fbf2a8e548160ef6554b403b9d96 Mon Sep 17 00:00:00 2001
+From 6bda494a533d31f662727357ce7541f728e3f6ba Mon Sep 17 00:00:00 2001
 From: Shashank Baghel <theradcolor@gmail.com>
 Date: Thu, 1 Oct 2020 11:00:30 +0530
 Subject: [PATCH 01/32] Makefile: Parse CPU varient to KBUILD flags for GCC
@@ -9,10 +9,10 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 5e2cd6c00ba9..d066b7737fe1 100644
+index db2cd40bb6f5..16404e42a959 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -661,7 +661,14 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
+@@ -674,7 +674,14 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
  else
@@ -28,35 +28,37 @@ index 5e2cd6c00ba9..d066b7737fe1 100644
  
  ifdef CONFIG_CC_WERROR
 -- 
-2.29.0
+2.25.1
 
 
-From 119d97d46d236ed9398116e4d4c4cf6317a2a62e Mon Sep 17 00:00:00 2001
+From 83b628d3fa3fafa5b9c056434b101144ada97150 Mon Sep 17 00:00:00 2001
 From: Subhajeet Muhuri <subhajeet.muhuri@gmail.com>
 Date: Wed, 8 Apr 2020 16:37:05 +0530
 Subject: [PATCH 02/32] Makefile: SDM660 Clang optimisation setup
 
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
- Makefile | 1 +
- 1 file changed, 1 insertion(+)
+ Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index d066b7737fe1..06cb1d50f031 100644
+index 16404e42a959..2fa337e91932 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -667,6 +667,7 @@ KBUILD_CFLAGS	+= -mcpu=cortex-a73.cortex-a53
+@@ -680,6 +680,8 @@ KBUILD_CFLAGS	+= -mcpu=cortex-a73.cortex-a53
  KBUILD_AFLAGS	+= -mcpu=cortex-a73.cortex-a53
  ifeq ($(cc-name),clang)
  KBUILD_CFLAGS   += -O3
 +KBUILD_CFLAGS	+= -mcpu=cortex-a53 -mtune=cortex-a53
++KBUILD_AFLAGS	+= -mcpu=cortex-a53 -mtune=cortex-a53
  endif
  endif
  endif
 -- 
-2.29.0
+2.25.1
 
 
-From 7f2e7da8352e5987f54c2d1d35d29a65393cb391 Mon Sep 17 00:00:00 2001
+From b6feed2a298b99ed20cc8f683ade16febe0a7bf2 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Sun, 8 Mar 2020 00:31:35 -0800
 Subject: [PATCH 03/32] kbuild: Disable stack conservation for GCC
@@ -72,10 +74,10 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 06cb1d50f031..44beace0e368 100644
+index 2fa337e91932..834a3051167d 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -862,9 +862,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
+@@ -883,9 +883,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
  # Make sure -fstack-check isn't enabled (like gentoo apparently did)
  KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check,)
  
@@ -86,10 +88,10 @@ index 06cb1d50f031..44beace0e368 100644
  KBUILD_CFLAGS   += $(call cc-option,-Werror=implicit-int)
  
 -- 
-2.29.0
+2.25.1
 
 
-From 259fc34100b73b9f1e74f86b51ecba30b30944cf Mon Sep 17 00:00:00 2001
+From 1bc8f4c4bed388ef23a6d0f1b5fe429c2fdab5be Mon Sep 17 00:00:00 2001
 From: Kees Cook <keescook@chromium.org>
 Date: Wed, 24 Apr 2019 09:55:37 -0700
 Subject: [PATCH 04/32] arm64: sysreg: Make mrs_s and msr_s macros work with
@@ -364,10 +366,10 @@ index 9142e082f5f3..c2986a0ffed0 100644
  
  /* vcpu is already in the HYP VA space */
 -- 
-2.29.0
+2.25.1
 
 
-From 1e757cf342c317c10d51fe068f3adaa6d2c27ea8 Mon Sep 17 00:00:00 2001
+From 93b966f6b62cdb909d83132a04c90b3bd0cdd30f Mon Sep 17 00:00:00 2001
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 Date: Wed, 24 Aug 2016 22:29:19 +1000
 Subject: [PATCH 05/32] kbuild: allow architectures to use thin archives
@@ -456,10 +458,10 @@ index 86b2bfc3034f..f545fa15ed5b 100644
  	bool
  	help
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index e6441514be23..d0b48ed88367 100644
+index 726d1b3f6759..e92e55e60d16 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -412,12 +412,22 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+@@ -415,12 +415,22 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
  # Rule to compile a set of .o files into one .o file
  #
  ifdef builtin-target
@@ -485,7 +487,7 @@ index e6441514be23..d0b48ed88367 100644
  
  $(builtin-target): $(obj-y) FORCE
  	$(call if_changed,link_o_target)
-@@ -443,7 +453,12 @@ $(modorder-target): $(subdir-ym) FORCE
+@@ -446,7 +456,12 @@ $(modorder-target): $(subdir-ym) FORCE
  #
  ifdef lib-target
  quiet_cmd_link_l_target = AR      $@
@@ -610,10 +612,10 @@ index ba6c34ea5429..270b663721a0 100755
  info LD vmlinux.o
  modpost_link vmlinux.o
 -- 
-2.29.0
+2.25.1
 
 
-From e8b517bac892b7ed5310f4d9286515ab2a150dba Mon Sep 17 00:00:00 2001
+From ee777d7390dc184d5057b6fdf4e802ae3c9e41fa Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:38 +1100
 Subject: [PATCH 06/32] kbuild: thin archives for multi-y targets
@@ -632,10 +634,10 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index d0b48ed88367..44a99b0ea2c1 100644
+index e92e55e60d16..1870109b7f10 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -478,11 +478,18 @@ $(filter $(addprefix $(obj)/,         \
+@@ -481,11 +481,18 @@ $(filter $(addprefix $(obj)/,         \
  $($(subst $(obj)/,,$(@:.o=-objs)))    \
  $($(subst $(obj)/,,$(@:.o=-y)))), $^)
  
@@ -658,10 +660,10 @@ index d0b48ed88367..44a99b0ea2c1 100644
  $(multi-used-y): FORCE
  	$(call if_changed,link_multi-y)
 -- 
-2.29.0
+2.25.1
 
 
-From 09e0aa8ef731e64db1efacb4138b2cd57a82f17e Mon Sep 17 00:00:00 2001
+From e2f739ead3dec3f0712b575a35d1be7c1ab677b3 Mon Sep 17 00:00:00 2001
 From: Andi Kleen <ak@linux.intel.com>
 Date: Tue, 31 Mar 2015 03:45:39 -0700
 Subject: [PATCH 07/32] lto: Add __noreorder and mark initcalls __noreorder
@@ -684,10 +686,10 @@ Signed-off-by: Andi Kleen <ak@linux.intel.com>
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index af8b4a879934..ed03455e9876 100644
+index 9485abe76b68..855be7832c55 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -310,6 +310,11 @@
+@@ -316,6 +316,11 @@
  #define __no_sanitize_address
  #endif
  
@@ -727,10 +729,10 @@ index 3561ea30ed8c..aad14524f7db 100644
  	LTO_REFERENCE_INITCALL(__initcall_##fn##id)
  
 -- 
-2.29.0
+2.25.1
 
 
-From 7bfc603ed99998fd84230c7dd2b9124cf6e4ed61 Mon Sep 17 00:00:00 2001
+From 59fea4ce243097fa7ca54d97394fd42410eb9c54 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 10 Mar 2020 21:13:43 -0700
 Subject: [PATCH 08/32] sys_ni: Remove duplicate cond_syscall(sys_madvise)
@@ -757,10 +759,10 @@ index 0623787ec67a..e983a8b2ee60 100644
  cond_syscall(sys_setregid);
  cond_syscall(sys_setgid);
 -- 
-2.29.0
+2.25.1
 
 
-From 0891b81adfa03671cdb3babfefae6a70bf2f657b Mon Sep 17 00:00:00 2001
+From 62fcd156f13019dd02352616b7d72effc6132d82 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 10 Mar 2020 21:19:28 -0700
 Subject: [PATCH 09/32] sys_ni: Fix cond_syscall() alias for LTO
@@ -794,7 +796,7 @@ index a6a42dd02466..7426dd5b1cac 100644
  
  #ifndef SYSCALL_ALIAS
 diff --git a/kernel/Makefile b/kernel/Makefile
-index 7e9bfd296e9a..1550b0dfa2f6 100644
+index 981563e7a221..60f84b6af71e 100644
 --- a/kernel/Makefile
 +++ b/kernel/Makefile
 @@ -30,9 +30,6 @@ KCOV_INSTRUMENT_extable.o := n
@@ -808,10 +810,10 @@ index 7e9bfd296e9a..1550b0dfa2f6 100644
  obj-y += locking/
  obj-y += power/
 -- 
-2.29.0
+2.25.1
 
 
-From d35790c84e04cde16fa85906555eb0fd0ff42111 Mon Sep 17 00:00:00 2001
+From e8ed5b508db56b7bf21a516d1b44c8785a03de1f Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 09:25:22 -0700
 Subject: [PATCH 10/32] arm64: Make __stack_chk_guard visible
@@ -839,10 +841,10 @@ index 5dd9b572259f..0d9a952caeae 100644
  #endif
  
 -- 
-2.29.0
+2.25.1
 
 
-From afb8403cb9639379466d7febff51e106622c68f8 Mon Sep 17 00:00:00 2001
+From 1cc4e10c324d3ed5e91551e57fc3001add9f0b8f Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 09:29:21 -0700
 Subject: [PATCH 11/32] arm64: Fix section mismatch with LTO caused by
@@ -908,10 +910,10 @@ index 6342f1c61a09..154746648cdd 100644
  
  	return NULL;
 -- 
-2.29.0
+2.25.1
 
 
-From 31dda77578849b5be5b38a424b79a300892e8c2f Mon Sep 17 00:00:00 2001
+From cfb885039e13ea3596fa01916cbcef1c614ee75f Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 11:23:20 -0700
 Subject: [PATCH 12/32] mm: Move __free_pages_boot_core() from __init section
@@ -940,10 +942,10 @@ index a100af131b9a..1a585fe52be7 100644
  	unsigned int nr_pages = 1 << order;
  	struct page *p = page;
 -- 
-2.29.0
+2.25.1
 
 
-From eda24c8eac2fc3ca6bde31d71ba6432bed81d95d Mon Sep 17 00:00:00 2001
+From 3d11c5c17df918b562f0f89ec9989e8275180e86 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 17 Mar 2020 20:14:51 -0700
 Subject: [PATCH 13/32] lto: Add Link Time Optimization support for GCC
@@ -961,10 +963,10 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  3 files changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 44beace0e368..8839aa7fbf87 100644
+index 834a3051167d..a00c35b6b43b 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -632,6 +632,21 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
+@@ -645,6 +645,21 @@ KBUILD_CFLAGS	+= $(CLANG_FLAGS)
  KBUILD_AFLAGS	+= $(CLANG_FLAGS)
  endif
  
@@ -987,7 +989,7 @@ index 44beace0e368..8839aa7fbf87 100644
  # values of the respective KBUILD_* variables
  ARCH_CPPFLAGS :=
 diff --git a/init/Kconfig b/init/Kconfig
-index 7d11b0d5dd5c..02554ca19cb4 100644
+index 73b26c910f58..7c5cd41acbe1 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1511,6 +1511,10 @@ config CC_OPTIMIZE_FOR_SIZE
@@ -1024,10 +1026,10 @@ index 270b663721a0..5d00814568d5 100755
  	else
  		if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
 -- 
-2.29.0
+2.25.1
 
 
-From 8858f9d4d26a2bcb2b1d37391cec69fb27d6a5f9 Mon Sep 17 00:00:00 2001
+From ed53e3dc41e33c058cf699de53271b3af51486ec Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 18 Mar 2020 21:54:15 -0700
 Subject: [PATCH 14/32] irqchip/gic-v3-its: Put its_init() in __init section
@@ -1072,10 +1074,10 @@ index 54048f336a1f..fb8f1720fe91 100644
  static inline bool gic_enable_sre(void)
  {
 -- 
-2.29.0
+2.25.1
 
 
-From 0e2cd501f8dbef4d6eaedb3443250079c499fec2 Mon Sep 17 00:00:00 2001
+From 8485862f0093ee86bf8557899fbe00e9ac99aa5c Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 24 Aug 2016 22:29:20 +1000
 Subject: [PATCH 15/32] kbuild: allow archs to select link dead code/data
@@ -1102,15 +1104,15 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
 ---
  Makefile                          |  9 ++++++
  arch/Kconfig                      | 13 ++++++++
- include/asm-generic/vmlinux.lds.h | 52 +++++++++++++++++--------------
+ include/asm-generic/vmlinux.lds.h | 50 +++++++++++++++++--------------
  init/Makefile                     |  2 ++
- 4 files changed, 53 insertions(+), 23 deletions(-)
+ 4 files changed, 52 insertions(+), 22 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 8839aa7fbf87..8a7a449181d4 100644
+index a00c35b6b43b..082d034dafb7 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -673,6 +673,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+@@ -686,6 +686,11 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
  
@@ -1122,7 +1124,7 @@ index 8839aa7fbf87..8a7a449181d4 100644
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
  else
-@@ -911,6 +916,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
+@@ -926,6 +931,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
  KBUILD_LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
  LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
  
@@ -1158,7 +1160,7 @@ index f545fa15ed5b..b5cc909e09bf 100644
  	bool
  	help
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 2a673e31b3dd..4e1793a00bee 100644
+index d3d8ad3469c3..093c2dec66d7 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -196,9 +196,14 @@
@@ -1275,16 +1277,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
  	}
  
-@@ -430,7 +435,7 @@
-  * during second ld run in second ld pass when generating System.map */
- #define TEXT_TEXT							\
- 		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely)		\
-+		*(.text.hot .text .text.fixup .text.unlikely .text.*)	\
- 		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
-@@ -517,6 +522,7 @@
+@@ -520,6 +525,7 @@
  
  /* init and exit section handling */
  #define INIT_DATA							\
@@ -1292,7 +1285,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  	*(.init.data)							\
  	MEM_DISCARD(init.data)						\
  	KERNEL_CTORS()							\
-@@ -583,7 +589,7 @@
+@@ -586,7 +592,7 @@
  		BSS_FIRST_SECTIONS					\
  		*(.bss..page_aligned)					\
  		*(.dynbss)						\
@@ -1301,7 +1294,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		*(COMMON)						\
  	}
  
-@@ -666,12 +672,12 @@
+@@ -669,12 +675,12 @@
  
  #define INIT_CALLS_LEVEL(level)						\
  		VMLINUX_SYMBOL(__initcall##level##_start) = .;		\
@@ -1317,7 +1310,7 @@ index 2a673e31b3dd..4e1793a00bee 100644
  		INIT_CALLS_LEVEL(0)					\
  		INIT_CALLS_LEVEL(1)					\
  		INIT_CALLS_LEVEL(2)					\
-@@ -685,21 +691,21 @@
+@@ -688,21 +694,21 @@
  
  #define CON_INITCALL							\
  		VMLINUX_SYMBOL(__con_initcall_start) = .;		\
@@ -1357,10 +1350,10 @@ index 8f7604e47999..2cdeb2b401c7 100644
  obj-y                          += noinitramfs.o
  obj-$(CONFIG_BLK_DEV_INITRD)   += initramfs.o
 -- 
-2.29.0
+2.25.1
 
 
-From 7ea7a557965cbb5ef615490ca85ec7309013bebf Mon Sep 17 00:00:00 2001
+From a9c6aecd014df352a92ca0213b269e81e055c7ac Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 14 Sep 2016 12:24:03 +1000
 Subject: [PATCH 16/32] kbuild: -ffunction-sections fix for archs with
@@ -1379,8 +1372,8 @@ Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michal Marek <mmarek@suse.com>
 ---
  arch/Kconfig                      |  4 +++-
- include/asm-generic/vmlinux.lds.h | 15 ++++++++++-----
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ include/asm-generic/vmlinux.lds.h | 13 +++++++++----
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
 diff --git a/arch/Kconfig b/arch/Kconfig
 index b5cc909e09bf..7217d1caacee 100644
@@ -1398,7 +1391,7 @@ index b5cc909e09bf..7217d1caacee 100644
  config HAVE_CONTEXT_TRACKING
  	bool
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 4e1793a00bee..08ca3d8e5471 100644
+index 093c2dec66d7..efe27ca47eca 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -198,9 +198,9 @@
@@ -1414,7 +1407,7 @@ index 4e1793a00bee..08ca3d8e5471 100644
   */
  #define DATA_DATA							\
  	*(.data .data.[0-9a-zA-Z_]*)					\
-@@ -432,10 +432,15 @@
+@@ -432,7 +432,12 @@
  	}
  
  /* .text section. Map to function alignment to avoid address changes
@@ -1427,16 +1420,12 @@ index 4e1793a00bee..08ca3d8e5471 100644
 + * conflicting section names, and must pull in .text.[0-9a-zA-Z_]* */
  #define TEXT_TEXT							\
  		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely .text.*)	\
-+		*(.text.hot .text .text.fixup .text.unlikely)		\
- 		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
+ 		*(.text.hot .text.hot.*)				\
 -- 
-2.29.0
+2.25.1
 
 
-From 0e8a8e2736c86a74a7478bb02b9e7998d1f77421 Mon Sep 17 00:00:00 2001
+From b6943a0b7aa863cd0260ab44cb4bf5f1f0ab45a4 Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Thu, 24 Nov 2016 03:41:41 +1100
 Subject: [PATCH 17/32] kbuild: keep data tables through dead code elimination
@@ -1456,7 +1445,7 @@ Signed-off-by: Michal Marek <mmarek@suse.com>
  1 file changed, 34 insertions(+), 34 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 08ca3d8e5471..54ecdedb14c7 100644
+index efe27ca47eca..8c17f5fa0652 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -114,7 +114,7 @@
@@ -1639,7 +1628,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___modver) = .;			\
  		. = ALIGN((align));					\
  		VMLINUX_SYMBOL(__end_rodata) = .;			\
-@@ -501,7 +501,7 @@
+@@ -504,7 +504,7 @@
  	. = ALIGN(align);						\
  	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__start___ex_table) = .;			\
@@ -1648,7 +1637,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___ex_table) = .;			\
  	}
  
-@@ -517,9 +517,9 @@
+@@ -520,9 +520,9 @@
  #ifdef CONFIG_CONSTRUCTORS
  #define KERNEL_CTORS()	. = ALIGN(8);			   \
  			VMLINUX_SYMBOL(__ctors_start) = .; \
@@ -1661,7 +1650,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  			VMLINUX_SYMBOL(__ctors_end) = .;
  #else
  #define KERNEL_CTORS()
-@@ -643,7 +643,7 @@
+@@ -646,7 +646,7 @@
  	. = ALIGN(8);							\
  	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__start___bug_table) = .;		\
@@ -1670,7 +1659,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__stop___bug_table) = .;			\
  	}
  #else
-@@ -655,7 +655,7 @@
+@@ -658,7 +658,7 @@
  	. = ALIGN(4);							\
  	.tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {		\
  		VMLINUX_SYMBOL(__tracedata_start) = .;			\
@@ -1679,7 +1668,7 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  		VMLINUX_SYMBOL(__tracedata_end) = .;			\
  	}
  #else
-@@ -672,7 +672,7 @@
+@@ -675,7 +675,7 @@
  #define INIT_SETUP(initsetup_align)					\
  		. = ALIGN(initsetup_align);				\
  		VMLINUX_SYMBOL(__setup_start) = .;			\
@@ -1689,10 +1678,10 @@ index 08ca3d8e5471..54ecdedb14c7 100644
  
  #define INIT_CALLS_LEVEL(level)						\
 -- 
-2.29.0
+2.25.1
 
 
-From 5cbc15655085a5a183fdeae10e684657274fbb66 Mon Sep 17 00:00:00 2001
+From 03bde15dd5e0431f1c6da222795f7cef248d5ecc Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 26 Jul 2017 22:46:27 +1000
 Subject: [PATCH 18/32] kbuild: linker script do not match C names unless
@@ -1722,7 +1711,7 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  1 file changed, 26 insertions(+), 12 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 54ecdedb14c7..d0214819a311 100644
+index 8c17f5fa0652..4635869dbe88 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -59,6 +59,22 @@
@@ -1762,7 +1751,7 @@ index 54ecdedb14c7..d0214819a311 100644
  	*(.ref.data)							\
  	*(.data..shared_aligned) /* percpu related */			\
  	MEM_KEEP(init.data)						\
-@@ -431,16 +444,17 @@
+@@ -431,17 +444,18 @@
  		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
  	}
  
@@ -1782,12 +1771,13 @@ index 54ecdedb14c7..d0214819a311 100644
 + */
  #define TEXT_TEXT							\
  		ALIGN_FUNCTION();					\
--		*(.text.hot .text .text.fixup .text.unlikely)		\
-+		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely)	\
+ 		*(.text.hot .text.hot.*)				\
+-		*(.text .text.fixup)					\
++		*(TEXT_MAIN .text.fixup)					\
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
  		*(.ref.text)						\
- 	MEM_KEEP(init.text)						\
- 	MEM_KEEP(exit.text)						\
-@@ -594,7 +608,7 @@
+@@ -597,7 +611,7 @@
  		BSS_FIRST_SECTIONS					\
  		*(.bss..page_aligned)					\
  		*(.dynbss)						\
@@ -1797,10 +1787,10 @@ index 54ecdedb14c7..d0214819a311 100644
  	}
  
 -- 
-2.29.0
+2.25.1
 
 
-From d8463ef8e56ecf404424daa3d22b1e8752218104 Mon Sep 17 00:00:00 2001
+From 45291965cdf33b3564b5f09627700be79e81d49c Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 9 May 2018 22:59:58 +1000
 Subject: [PATCH 19/32] kbuild: Fix asm-generic/vmlinux.lds.h for
@@ -1825,7 +1815,7 @@ Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
  1 file changed, 27 insertions(+), 18 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index d0214819a311..c1e2d2855547 100644
+index 4635869dbe88..d9ce48766124 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
 @@ -64,15 +64,24 @@
@@ -1891,9 +1881,9 @@ index d0214819a311..c1e2d2855547 100644
  	*(.data.unlikely)						\
  	STRUCT_ALIGN();							\
  	*(__tracepoints)						\
-@@ -456,8 +465,8 @@
- 		ALIGN_FUNCTION();					\
- 		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely)	\
+@@ -459,8 +468,8 @@
+ 		*(.text.unlikely .text.unlikely.*)			\
+ 		*(.text.unknown .text.unknown.*)			\
  		*(.ref.text)						\
 -	MEM_KEEP(init.text)						\
 -	MEM_KEEP(exit.text)						\
@@ -1902,7 +1892,7 @@ index d0214819a311..c1e2d2855547 100644
  
  
  /* sched.text is aling to function alignment to secure we have same
-@@ -501,7 +510,7 @@
+@@ -504,7 +513,7 @@
  		VMLINUX_SYMBOL(__softirqentry_text_end) = .;
  
  /* Section used for early init (in .S files) */
@@ -1911,7 +1901,7 @@ index d0214819a311..c1e2d2855547 100644
  
  #define HEAD_TEXT_SECTION							\
  	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {		\
-@@ -542,11 +551,11 @@
+@@ -545,11 +554,11 @@
  /* init and exit section handling */
  #define INIT_DATA							\
  	KEEP(*(SORT(___kentry+*)))					\
@@ -1926,7 +1916,7 @@ index d0214819a311..c1e2d2855547 100644
  	FTRACE_EVENTS()							\
  	TRACE_SYSCALLS()						\
  	KPROBE_BLACKLIST()						\
-@@ -564,16 +573,16 @@
+@@ -567,16 +576,16 @@
  	EARLYCON_TABLE()
  
  #define INIT_TEXT							\
@@ -1948,7 +1938,7 @@ index d0214819a311..c1e2d2855547 100644
  
  #define EXIT_TEXT							\
  	*(.exit.text)							\
-@@ -590,7 +599,7 @@
+@@ -593,7 +602,7 @@
  #define SBSS(sbss_align)						\
  	. = ALIGN(sbss_align);						\
  	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
@@ -1957,7 +1947,7 @@ index d0214819a311..c1e2d2855547 100644
  		*(.scommon)						\
  	}
  
-@@ -679,7 +688,7 @@
+@@ -682,7 +691,7 @@
  #define NOTES								\
  	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
  		VMLINUX_SYMBOL(__start_notes) = .;			\
@@ -1967,10 +1957,10 @@ index d0214819a311..c1e2d2855547 100644
  	}
  
 -- 
-2.29.0
+2.25.1
 
 
-From 63160b37df0d2f44d2a5da1a9ba3a9bae86b1e29 Mon Sep 17 00:00:00 2001
+From 26b02a772e8555dfeb6fa76505833685a534938e Mon Sep 17 00:00:00 2001
 From: Nicholas Piggin <npiggin@gmail.com>
 Date: Wed, 9 May 2018 23:00:00 +1000
 Subject: [PATCH 20/32] kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
@@ -2014,7 +2004,7 @@ index 7217d1caacee..f545fa15ed5b 100644
  	bool
  	help
 diff --git a/init/Kconfig b/init/Kconfig
-index 02554ca19cb4..211a89877be8 100644
+index 7c5cd41acbe1..e6bd474de5f5 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1515,6 +1515,33 @@ config LTO
@@ -2052,10 +2042,10 @@ index 02554ca19cb4..211a89877be8 100644
  	bool
  
 -- 
-2.29.0
+2.25.1
 
 
-From 20a57153ceed40cbdb7bc2756fdc6d92e55e5a64 Mon Sep 17 00:00:00 2001
+From 3a3ff98427025f46c41106b57cdea3b08c2cd17b Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 17:51:02 -0700
 Subject: [PATCH 21/32] arm64: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
@@ -2082,10 +2072,10 @@ index 33fb9d6c5b7e..f50814d92eb2 100644
  	select HAVE_PATA_PLATFORM
  	select HAVE_PERF_EVENTS
 -- 
-2.29.0
+2.25.1
 
 
-From 8bd44fb44f1cd20beb940a1949bd0f68f27c8ccb Mon Sep 17 00:00:00 2001
+From d421baba54fb4df32ec21fc17e04332f406c9d68 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 18:58:42 -0700
 Subject: [PATCH 22/32] lib/nlattr.c: Fix stringop overflow warning in
@@ -2112,10 +2102,10 @@ index f5907d23272d..cc09c8402637 100644
  	int attrlen = nla_len(nla);
  	int d;
 -- 
-2.29.0
+2.25.1
 
 
-From fa6fdae61c6053a9d34de0383b6b2cf98962a758 Mon Sep 17 00:00:00 2001
+From 75208ac69b6ecab91adce34032ad2f46e06c5508 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 26 Mar 2020 23:59:19 -0700
 Subject: [PATCH 23/32] arm64: Disable -fwhole-program for vDSO
@@ -2142,10 +2132,10 @@ index 4adcb532ac6a..6c69d5db9f36 100644
  # Force -O2 to avoid libgcc dependencies
  CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
 -- 
-2.29.0
+2.25.1
 
 
-From 34ab4919c57d48cd3af59f8aa92c19ef30097a5a Mon Sep 17 00:00:00 2001
+From d9662fa5d72a24633a182838ab57e58a8b06d9d7 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Sun, 29 Mar 2020 10:47:41 -0700
 Subject: [PATCH 24/32] soc: qcom: spcom: Fix spcom_register_chardev() section
@@ -2175,10 +2165,10 @@ index 68199d9adb02..df2076c4cad8 100644
  	int ret;
  	unsigned baseminor = 0;
 -- 
-2.29.0
+2.25.1
 
 
-From a4dd2a19ab79ac2e7e5b8fafc02b62870b1ea323 Mon Sep 17 00:00:00 2001
+From 39771e11bd31d227fae8ace8e60858f8e907c529 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 7 May 2020 23:46:47 -0700
 Subject: [PATCH 25/32] arm64: Use a macro to silence current_stack_pointer
@@ -2213,10 +2203,10 @@ index ffcdf742cddf..a709cb23349f 100644
  
  #endif /* __ASM_STACK_POINTER_H */
 -- 
-2.29.0
+2.25.1
 
 
-From 7acab4a902efa4e565ea69a0cdec7cbf6377a321 Mon Sep 17 00:00:00 2001
+From cde9be9f67f787ed043e2ae39c26fa8be94921c8 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Thu, 7 May 2020 23:46:48 -0700
 Subject: [PATCH 26/32] kbuild: Pass -flinker-output=nolto-rel for LTO to
@@ -2236,10 +2226,10 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 8a7a449181d4..51eb0e51f537 100644
+index 082d034dafb7..e42ca913fdb9 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -636,7 +636,8 @@ ifdef CONFIG_LTO
+@@ -649,7 +649,8 @@ ifdef CONFIG_LTO
  LTO_CFLAGS    := -flto -flto=jobserver -fno-fat-lto-objects \
                   -fuse-linker-plugin -fwhole-program
  KBUILD_CFLAGS += $(LTO_CFLAGS)
@@ -2250,10 +2240,10 @@ index 8a7a449181d4..51eb0e51f537 100644
  AR            := $(CROSS_COMPILE)gcc-ar
  NM            := $(CROSS_COMPILE)gcc-nm
 -- 
-2.29.0
+2.25.1
 
 
-From 42471c4d0a160c6e6f9d5e90b03aada7069887bf Mon Sep 17 00:00:00 2001
+From e49b5bd8ba2f2abf06dc9b9f6705db772fd103dc Mon Sep 17 00:00:00 2001
 From: Sami Tolvanen <samitolvanen@google.com>
 Date: Tue, 13 Feb 2018 14:00:14 -0800
 Subject: [PATCH 27/32] arm64: fix LD_DEAD_CODE_DATA_ELIMINATION
@@ -2283,10 +2273,10 @@ index 718f4c4be05c..fe14d821386f 100644
  	VMLINUX_SYMBOL(__entry_tramp_text_end) = .;
  #else
 -- 
-2.29.0
+2.25.1
 
 
-From 5fbe6a647fe3287b21fc4344a507e69d5963ea6e Mon Sep 17 00:00:00 2001
+From a9c4d60cb5a85d6d5cbdfee8d7d33c2feb7b2f5f Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Tue, 12 May 2020 12:00:08 -0700
 Subject: [PATCH 28/32] kbuild: Increase GCC automatic inline instruction limit
@@ -2308,10 +2298,10 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index 51eb0e51f537..0978483dfde7 100644
+index e42ca913fdb9..b20a6430e476 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -635,7 +635,7 @@ endif
+@@ -648,7 +648,7 @@ endif
  ifdef CONFIG_LTO
  LTO_CFLAGS    := -flto -flto=jobserver -fno-fat-lto-objects \
                   -fuse-linker-plugin -fwhole-program
@@ -2321,10 +2311,10 @@ index 51eb0e51f537..0978483dfde7 100644
                   -Wno-stringop-overflow -flinker-output=nolto-rel
  LDFINAL       := $(CONFIG_SHELL) $(srctree)/scripts/gcc-ld $(LTO_LDFLAGS)
 -- 
-2.29.0
+2.25.1
 
 
-From a4d0d0b2e6bb225050dc31ab0ddf8b262b03f2da Mon Sep 17 00:00:00 2001
+From 149e48dfebb76d63e7517491047e3b40accb4984 Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Wed, 10 Jul 2019 19:18:40 -0700
 Subject: [PATCH 29/32] Makefile: Use pipes rather than temporary files for
@@ -2359,19 +2349,19 @@ Signed-off-by: Danny Lin <danny@kdrag0n.dev>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 0978483dfde7..84aad5483621 100644
+index b20a6430e476..1c464f354248 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -305,7 +305,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
- 
- HOSTCC       = $(CCACHE) gcc
- HOSTCXX      = $(CCACHE) g++
+@@ -312,7 +312,7 @@ else
+ HOSTCC       = gcc
+ HOSTCXX      = g++
+ endif
 -HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
 +HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -pipe
  HOSTCXXFLAGS = -O2
  
  # Decide whether to build built-in, modular, or both.
-@@ -387,7 +387,7 @@ LINUXINCLUDE    := \
+@@ -398,7 +398,7 @@ LINUXINCLUDE    := \
  
  KBUILD_CPPFLAGS := -D__KERNEL__
  
@@ -2381,10 +2371,10 @@ index 0978483dfde7..84aad5483621 100644
  		   -Werror-implicit-function-declaration \
  		   -Wno-format-security \
 -- 
-2.29.0
+2.25.1
 
 
-From 1557cb277492ad5c2eca2b810c446376bc9968e5 Mon Sep 17 00:00:00 2001
+From 79547aaab0bb439c639dd3bffad8e20aa678df78 Mon Sep 17 00:00:00 2001
 From: Tyler Nijmeh <tylernij@gmail.com>
 Date: Sat, 18 May 2019 14:27:21 -0700
 Subject: [PATCH 30/32] arch: Allow all archs to select optimized inlining
@@ -2472,10 +2462,10 @@ index c2b809cbd430..816af004228a 100644
  	bool
  	help
 -- 
-2.29.0
+2.25.1
 
 
-From cca68dd98e2e8ec435b2381060451a3c7f3661bc Mon Sep 17 00:00:00 2001
+From 23d5b305ad5e4d2721e6a3ee9baf619ab00d4b49 Mon Sep 17 00:00:00 2001
 From: Tyler Nijmeh <tylernij@gmail.com>
 Date: Sat, 18 May 2019 14:31:39 -0700
 Subject: [PATCH 31/32] configs: Optimize inlining of arch
@@ -2488,10 +2478,10 @@ Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 7cad7d21d187..7bf9982fa730 100644
+index feb68d5352be..4223a0a3bb91 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
-@@ -772,6 +772,8 @@ CONFIG_NLS_UTF8=y
+@@ -771,6 +771,8 @@ CONFIG_NLS_UTF8=y
  # CONFIG_NETWORK_FILESYSTEMS is not set
  CONFIG_PRINTK_TIME=y
  CONFIG_DYNAMIC_DEBUG=y
@@ -2501,10 +2491,10 @@ index 7cad7d21d187..7bf9982fa730 100644
  CONFIG_FRAME_WARN=0
  CONFIG_PANIC_TIMEOUT=5
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index 88e0ac6557c1..60d281dbd88d 100644
+index be1797f29ae7..5ab2aae27955 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
-@@ -772,6 +772,8 @@ CONFIG_NLS_UTF8=y
+@@ -771,6 +771,8 @@ CONFIG_NLS_UTF8=y
  # CONFIG_NETWORK_FILESYSTEMS is not set
  CONFIG_PRINTK_TIME=y
  CONFIG_DYNAMIC_DEBUG=y
@@ -2514,10 +2504,10 @@ index 88e0ac6557c1..60d281dbd88d 100644
  CONFIG_FRAME_WARN=0
  CONFIG_PANIC_TIMEOUT=5
 -- 
-2.29.0
+2.25.1
 
 
-From 26e92aee002d950576d0addd92c3f4066a50a0b3 Mon Sep 17 00:00:00 2001
+From c82167ba3326da21c54c438a546b67858770f1b4 Mon Sep 17 00:00:00 2001
 From: Sultan Alsawaf <sultan@kerneltoast.com>
 Date: Wed, 11 Mar 2020 11:30:43 -0700
 Subject: [PATCH 32/32] configs: Enable Link Time Optimization
@@ -2525,34 +2515,36 @@ Subject: [PATCH 32/32] configs: Enable Link Time Optimization
 Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
 Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
 ---
- arch/arm64/configs/whyred-newcam_defconfig | 1 +
- arch/arm64/configs/whyred_defconfig        | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/configs/whyred-newcam_defconfig | 2 ++
+ arch/arm64/configs/whyred_defconfig        | 2 ++
+ 2 files changed, 4 insertions(+)
 
 diff --git a/arch/arm64/configs/whyred-newcam_defconfig b/arch/arm64/configs/whyred-newcam_defconfig
-index 7bf9982fa730..f4180062c024 100644
+index 4223a0a3bb91..67d9cad9ff74 100644
 --- a/arch/arm64/configs/whyred-newcam_defconfig
 +++ b/arch/arm64/configs/whyred-newcam_defconfig
-@@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
+@@ -48,6 +48,8 @@ CONFIG_EMBEDDED=y
  # CONFIG_COMPAT_BRK is not set
  CONFIG_PROFILING=y
  CONFIG_JUMP_LABEL=y
 +CONFIG_LTO=y
++# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
  CONFIG_CC_STACKPROTECTOR_STRONG=y
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 diff --git a/arch/arm64/configs/whyred_defconfig b/arch/arm64/configs/whyred_defconfig
-index 60d281dbd88d..1e9da5f2e190 100644
+index 5ab2aae27955..523e0bdae493 100644
 --- a/arch/arm64/configs/whyred_defconfig
 +++ b/arch/arm64/configs/whyred_defconfig
-@@ -48,6 +48,7 @@ CONFIG_EMBEDDED=y
+@@ -48,6 +48,8 @@ CONFIG_EMBEDDED=y
  # CONFIG_COMPAT_BRK is not set
  CONFIG_PROFILING=y
  CONFIG_JUMP_LABEL=y
 +CONFIG_LTO=y
++# CONFIG_LD_DEAD_CODE_DATA_ELIMINATION is not set
  CONFIG_CC_STACKPROTECTOR_STRONG=y
  CONFIG_ARCH_MMAP_RND_COMPAT_BITS=16
  CONFIG_MODULES=y
 -- 
-2.29.0
+2.25.1
 
