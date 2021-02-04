@@ -1,0 +1,35 @@
+From 8288c3f4415aa1cea5bce8a290c53373b528e44d Mon Sep 17 00:00:00 2001
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Sun, 31 Jan 2021 19:39:43 +0530
+Subject: [PATCH] kbuild: clear LDFLAGS in the top Makefile Currently LDFLAGS
+ is not cleared, so same flags are accumulated in LDFLAGS when the top
+ Makefile is recursively invoked.
+
+I found unneeded rebuild for ARCH=arm64 when CONFIG_TRIM_UNUSED_KSYMS
+is enabled.  If include/generated/autoksyms.h is updated, the top
+Makefile is recursively invoked, then arch/arm64/Makefile adds one
+more '-maarch64linux'.  Due to the command line change, modules are
+rebuilt needlessly.
+
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Acked-by: Nicolas Pitre <nico@linaro.org>
+Signed-off-by: Shashank Baghel <theradcolor@gmail.com>
+---
+ Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Makefile b/Makefile
+index c371c4d870b2..230e92a0b231 100644
+--- a/Makefile
++++ b/Makefile
+@@ -402,6 +402,7 @@ KBUILD_AFLAGS   := -D__ASSEMBLY__ $(call cc-option,-fno-PIE)
+ KBUILD_AFLAGS_MODULE  := -DMODULE
+ KBUILD_CFLAGS_MODULE  := -DMODULE
+ KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
++LDFLAGS :=
+ CLANG_FLAGS :=
+ 
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+-- 
+2.30.0
+
